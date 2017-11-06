@@ -41,6 +41,9 @@
       .attr('class','chart');
 
     var myChart = new dimple.chart(svg, data);
+    myChart.defaultColors = [
+      new dimple.color('#66c2a5'),
+      new dimple.color('#8da0cb')]
     var x = myChart.addCategoryAxis("x", ["Pclass", "Sex"]);
     x.title = "Passenger Class and Gender";
     var y = myChart.addMeasureAxis("y", "PassengerId");
@@ -49,6 +52,7 @@
     var myGenderSeries = myChart.addSeries("Survived", dimple.plot.bar);
     myChart.addLegend(1100, 25, '10%', '10%');
     myGenderSeries.aggregate = dimple.aggregateMethod.count;
+
 
     myChart.draw();
     };
