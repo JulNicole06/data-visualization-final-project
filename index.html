@@ -35,7 +35,7 @@
     var x = myChart.addCategoryAxis("x", ["Pclass", "Sex"]);
     var y = myChart.addMeasureAxis("y", "PassengerId");
     var myGenderSeries = myChart.addSeries("Survived", dimple.plot.bar);
-    myChart.addLegend(600, 10, 600, 100, "right");
+    myChart.addLegend(1100, 25, '10%', '10%');
     myGenderSeries.aggregate = dimple.aggregateMethod.count;
 
     myChart.draw();
