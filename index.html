@@ -31,7 +31,7 @@
 
     d3.select('h2')
       .append('p')
-      .text("First class females had the highest survival rate");
+      .text("First class females had the highest survival rate (97%)");
 
     var svg = d3.select("body")
       .append("svg")
@@ -42,8 +42,8 @@
 
     var myChart = new dimple.chart(svg, data);
     myChart.defaultColors = [
-      new dimple.color('#66c2a5'),
-      new dimple.color('#8da0cb')]
+      new dimple.color('#8da0cb'),
+      new dimple.color('#66c2a5')]
     var x = myChart.addCategoryAxis("x", ["Pclass", "Sex"]);
     x.title = "Passenger Class and Gender";
     var y = myChart.addMeasureAxis("y", "PassengerId");
