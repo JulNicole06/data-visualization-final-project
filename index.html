@@ -9,6 +9,11 @@
     h2 {
       text-align: center;
     }
+    p {
+      text-align: center;
+      font-size: 65%;
+      font-weight: lighter;
+    }
   </style>
 
   <script type="text/javascript">
@@ -23,6 +28,10 @@
     d3.select('body')
       .append('h2')
       .text("Demographics of Titanic Survivors vs Victims");
+
+    d3.select('h2')
+      .append('p')
+      .text("First class females had the highest survival rate");
 
     var svg = d3.select("body")
       .append("svg")
