@@ -1,7 +1,9 @@
-Summary - in no more than 4 sentences, briefly introduce your data visualization and add any context that can help readers understand it
+# Summary 
+This dataset contains information on occupational employment statistics (OES) for national industry-specific SIC codes starting in 1998 to 2016
 
-Design - explain any design choices you made including changes to the visualization after collecting feedback
+# Design 
 
-Feedback - include all feedback you received from others on your visualization from the first sketch to the final visualization
+# Feedback 
 
-Resources - list any sources you consulted to create your visualization
+# Resources 
+1. https://www.bls.gov/oes/tables.htm - data in .xls format for each year was downloaded from the Bureau of Labor Statistics website
