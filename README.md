@@ -1,5 +1,5 @@
 # Summary 
-This dataset contains information on occupational employment statistics (OES) for national industry-specific SIC codes starting in 1998 to 2016
+This dataset contains information on occupational employment statistics (OES) by state from 2010 - 2016
 
 # Design 
 

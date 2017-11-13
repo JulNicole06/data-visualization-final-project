@@ -9,59 +9,108 @@
     h2 {
       text-align: center;
     }
+
     p {
       text-align: center;
       font-size: 65%;
       font-weight: lighter;
     }
+
+    .svg {
+    	outline-style: solid;
+    	outline-color: red;
+    }
+
   </style>
 
   <script type="text/javascript">
 
     function draw(data) {
+	    "use strict";
+	    var margin = 75, width = (1400-margin), height = (800-margin);
 
-    "use strict";
-    var margin = 75,
-    width = "100%"- margin,
-    height = 600 - margin;
+	    d3.select('body')
+	      .append('h2')
+	      .text("Occupational Employment Statistics by State");
 
-    d3.select('body')
-      .append('h2')
-      .text("Demographics of Titanic Survivors vs Victims");
+	    d3.select('h2')
+	      .append('p')
+	      .text("2010-2016");
 
-    d3.select('h2')
-      .append('p')
-      .text("First class females had the highest survival rate (97%)");
+	    var svg = d3.select("body")
+	      .append("svg")
+	      .attr("class", "svg")
+	      .attr("width", width + margin)
+	      .attr("height", height + margin)
+	      .append('g')
+	      .attr('class','chart');
 
-    var svg = d3.select("body")
-      .append("svg")
-      .attr("width", width + margin)
-      .attr("height", height + margin)
-      .append('g')
-      .attr('class','chart');
+	    d3.select('svg')
+	    	.selectAll("circle")
+	    	.data(data)
+	    	.enter()
+	    	.append("circle");
 
-    var myChart = new dimple.chart(svg, data);
-    myChart.defaultColors = [
-      new dimple.color('#8da0cb'),
-      new dimple.color('#66c2a5')]
-    var x = myChart.addCategoryAxis("x", ["Pclass", "Sex"]);
-    x.title = "Passenger Class and Gender";
-    var y = myChart.addMeasureAxis("y", "PassengerId");
-    y.title = "Percent of Passengers";
-    y.showPercent = true;
-    var myGenderSeries = myChart.addSeries("Survived", dimple.plot.bar);
-    myChart.addLegend('90%', '50%', '10%', '10%');
-    myGenderSeries.aggregate = dimple.aggregateMethod.count;
+	    var time_extent = d3.extent(data, function(d) {
+	    	return d['year'];
+	    });
 
+	    var count_extent = d3.extent(data, function(d) {
+	    	return d['tot_emp'];
+	    });
 
-    myChart.draw();
-    };
+	    // Create x-axis scale mapping dates -> pixels
+	    var time_scale = d3.time.scale()
+	    	.range([margin, width])
+	    	.domain(time_extent);
+
+	    // Create y-axis scale mapping employment -> pixels
+	    var count_scale = d3.scale.linear()
+	    	.range([margin, height])
+	    	.domain(count_extent);
+
+	    var time_axis = d3.svg.axis()
+	    	.scale(time_scale);
+
+	   	var count_axis = d3.svg.axis()
+	   		.scale(count_scale)
+	   		.orient("left");
+
+	   	d3.select("svg")
+	   		.append('g')
+	   		.attr('time', 'x axis')
+	   		.attr('transform', ("translate(0," + height + ")"))
+	   		.call(time_axis);
+
+	   	d3.select("svg")
+	   		.append('g')
+	   		.attr('class', 'y axis')
+	   		.attr('transform', ("translate(" + margin + ",0)"))
+	   		.call(count_axis);	
+
+	   	d3.selectAll('circle')
+	   		.attr('cx', function(d) {
+	   			return time_scale(d['year']);
+	   		})
+	   		.attr('cy', function(d) {
+	   			return count_scale(d['tot_emp']);
+	   		})
+	   		.attr('r', 5)
+	   		.attr('fill', "blue");
+	};
 
   </script>
 </head>
 <body>
   <script type="text/javascript">
-    d3.csv("./titanic-data.csv", draw);
+  	format = d3.time.format("%Y")
+
+    d3.csv("./State_OES.csv", function(d) {
+    	// transform data
+    	d['year'] = format.parse(d['year']);
+    	d['tot_emp'] = +d['tot_emp'];
+    	return d;
+    }, draw);
   </script>
 </body>
 </html>
