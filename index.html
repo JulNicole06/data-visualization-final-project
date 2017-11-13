@@ -96,7 +96,13 @@
 	   			return count_scale(d['tot_emp']);
 	   		})
 	   		.attr('r', 5)
-	   		.attr('fill', "blue");
+	   		.attr('fill', function(d) {
+	   			if (d['state'] == "Alabama") {
+	   				return 'red'
+	   			} else {
+	   				return 'blue';
+	   			}
+	   		});
 	};
 
   </script>
