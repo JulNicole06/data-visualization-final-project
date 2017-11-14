@@ -95,7 +95,10 @@
   			svg.append('g')
   				.attr("class", "bubble")
   				.selectAll("circle")
-  				.data(nested)
+  				//sort data so smaller circles don't get hidden under larger ones
+  				.data(nested.sort(function(a,b) {
+  					return b.values['tot_emp'] - a.values['tot_emp'];
+  				}))
   				.enter()
   				.append("circle")
   				.attr('cx', function(d) {
