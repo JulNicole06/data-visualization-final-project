@@ -2,3 +2,4 @@ oes_data/*
 data_formatting.R
 .Rapp.history
 state_coordinates.xlsx
+map.json

@@ -6,158 +6,133 @@
   <script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
 
   <style>
-    h2 {
+    h1 {
       text-align: center;
     }
 
     p {
       text-align: center;
-      font-size: 65%;
+      font-size: 80%;
       font-weight: lighter;
     }
 
-    .svg {
-    	outline-style: solid;
-    	outline-color: red;
+    html,
+    body,
+    svg {
+    	height: auto;
+    	width: 100%;
+    	overflow: visible;
     }
 
-    .legend {
+    .map {
     	outline-style: solid;
-    	outline-color: black;
+    	height: auto;
+    	width: 100%;
     }
+
 
   </style>
 
   <script type="text/javascript">
 
-    function draw(data) {
-	    "use strict";
-	    var margin = 75, width = (1400-margin), height = (800-margin);
+  	function draw(geo_data) {
 
-	    d3.select('body')
-	      .append('h2')
-	      .text("Occupational Employment Statistics by State");
+  		var svg = d3.select("body")
+  			.append("svg")
+  			.append('g')
+  			.attr('class', 'map');
 
-	    d3.select('h2')
-	      .append('p')
-	      .text("2010-2016");
+  		var projection = d3.geo.mercator()
+  			.scale(600)
+  			.translate([1600,650]);
 
-	    var svg = d3.select("body")
-	      .append("svg")
-	      .attr("class", "svg")
-	      .attr("width", width + margin)
-	      .attr("height", height + margin)
-	      .append('g')
-	      .attr('class','chart');
+  		var path = d3.geo.path().projection(projection);
 
-	    d3.select('svg')
-	    	.selectAll("circle")
-	    	.data(data)
-	    	.enter()
-	    	.append("circle");
+  		var map = svg.selectAll('path')
+  			.data(geo_data.features)
+  			.enter()
+  			.append('path')
+  			.attr('d', path)
+  			.style('fill', 'rgb(9,157,217)')
+  			.style('stroke', 'black')
+  			.style('stroke-width', 0.5);
 
-	    var time_extent = d3.extent(data, function(d) {
-	    	return d['year'];
-	    });
+  		function plot_points(data) {
+  			// draw circles logic
+  			var nested = d3.nest()
+  				.key(function(d) {
+  					return d['area'];
+  				})
+  				.rollup(function(leaves) {
+  					var total = d3.sum(leaves, function(d) {
+  						return d['tot_emp'];
+  				 	});
+  					var coords = leaves.map(function(d) {
+  						return projection([+d.longitude, +d.latitude]);
+  					});
+  					var center_x = d3.mean(coords, function(d) {
+  						return d[0];
+  					});
+  					var center_y = d3.mean(coords, function(d) {
+  						return d[1];
+  					});
+  					return {
+  						'tot_emp' : total,
+  						'x' : center_x,
+  						'y' : center_y
+  					};
+  				})
+  				.entries(data);
 
-	    var count_extent = d3.extent(data, function(d) {
-	    	return d['tot_emp'];
-	    });
+  			var employment_extent = d3.extent(nested, function(d) {
+  				return d.values['tot_emp'];
+  			});
 
-	    // Create x-axis scale mapping dates -> pixels
-	    var time_scale = d3.time.scale()
-	    	.range([margin, width])
-	    	.domain(time_extent);
+  			var radius = d3.scale.sqrt()
+  				.domain(employment_extent)
+  				.range([0,12]);
 
-	    // Create y-axis scale mapping employment -> pixels
-	    var count_scale = d3.scale.linear()
-	    	.range([height, margin])
-	    	.domain(count_extent);
+  			svg.append('g')
+  				.attr("class", "bubble")
+  				.selectAll("circle")
+  				.data(nested)
+  				.enter()
+  				.append("circle")
+  				.attr('cx', function(d) {
+  					return d.values['x'];
+  				})
+  				.attr('cy', function(d) {
+  					return d.values['y'];
+  				})
+  				.attr('r', function(d) {
+  					return radius(d.values['tot_emp']);
+  				})
+  				.attr('fill', 'rgb(247, 148, 32)')
+  				.attr('stroke', 'black')
+  				.attr('stroke-width', 0.7)
+  				.attr('opacity', 0.7);
+  		};
 
-	    var time_axis = d3.svg.axis()
-	    	.scale(time_scale);
+  		var format = d3.time.format("%Y")
 
-	   	var count_axis = d3.svg.axis()
-	   		.scale(count_scale)
-	   		.orient("left");
 
-	   	d3.select("svg")
-	   		.append('g')
-	   		.attr('time', 'x axis')
-	   		.attr('transform', ("translate(0," + height + ")"))
-	   		.call(time_axis);
+   		d3.csv("./State_OES.csv", function(d) {
+    	// transform data
+    		d['year'] = format.parse(d['year']);
+    		d['tot_emp'] = +d['tot_emp'];
+    		return d;
+    }, plot_points);
 
-	   	d3.select("svg")
-	   		.append('g')
-	   		.attr('class', 'y axis')
-	   		.attr('transform', ("translate(" + margin + ",0)"))
-	   		.call(count_axis);	
-
-	   	d3.selectAll('circle')
-	   		.attr('cx', function(d) {
-	   			return time_scale(d['year']);
-	   		})
-	   		.attr('cy', function(d) {
-	   			return count_scale(d['tot_emp']);
-	   		})
-	   		.attr('r', 5)
-	   		.attr('fill', function(d) {
-	   			if (d['state'] == "Alabama") {
-	   				return 'red'
-	   			} else {
-	   				return 'blue';
-	   			}
-	   		});
-
-	   	// set the stage for the legend with SVG elements
-	   	var legend = svg.append("g")
-	   		.attr("class", "legend")
-	   		.attr("transform", ("translate(" + (width - 100) + "," + 100 + ")"))
-	   		.selectAll("g")
-	   		.data(["Alabama", "Georgia"])
-	   		.enter().append("g");
-
-	   	legend.append("circle")
-	   		.attr("cy", function(d, i) {
-	   			return i * 30;
-	   		})
-	   		.attr("r", function(d) {
-	   			if (d == "Alabama") {
-	   				return 5;
-	   			} else {
-	   				return 5;
-	   			}
-	   		})
-	   		.attr("fill", function(d) {
-	   			if (d == "Alabama") {
-	   				return 'red';
-	   			} else {
-	   				return 'blue';
-	   			}
-	   		});
-
-	   	legend.append("text")
-	   		.attr("y", function(d, i) {
-	   			return i * 30 + 5;
-	   		})
-	   		.attr("x", 15)
-	   		.text(function(d) {
-	   			return d;
-	   		});
-	};
+  	};
 
   </script>
 </head>
 <body>
-  <script type="text/javascript">
-  	format = d3.time.format("%Y")
+	<h1> Total Employment by State </h1>
+	<p> As reported by the Bureau of Labor Statistics 2010-2016
+  	<script type="text/javascript">
 
-    d3.csv("./State_OES.csv", function(d) {
-    	// transform data
-    	d['year'] = format.parse(d['year']);
-    	d['tot_emp'] = +d['tot_emp'];
-    	return d;
-    }, draw);
-  </script>
+  		d3.json("./map.json", draw);
+  	</script>
 </body>
 </html>
