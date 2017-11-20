@@ -40,7 +40,7 @@
   		function draw(geo_data) {
   			d3.select("body")
   				.append("h2")
-  				.text("Total Employment by Occupation per Year");
+  				.text("Max Mean Salary by Occupation Group");
 
   			d3.select("body")
   				.append("h3")
@@ -52,8 +52,8 @@
   				.attr('class', 'map');
 
   			var projection = d3.geo.mercator()
-  				.scale(600)
-  				.translate([1600,650]);
+  				.scale(500)
+  				.translate([1700,650]);
 
   			var path = d3.geo.path().projection(projection);
 
@@ -68,91 +68,143 @@
 
   			function plot_points(data) {
 
-  				function agg(leaves) {
-  					
-  					var state_data = d3.set();
-
-  					leaves.forEach(function(d) {
-  						state_data.add(d['tot_emp']),
-  						state_data.add(+d['latitude']),
-  						state_data.add(+d['longitude']);
-  					});
-
-  					var coords = leaves.map(function(d) { 
-  						return projection([+d['longitude'], +d['latitude']]); 
-  					});
-
-  					var employment = state_data.values()[0];
-
-  					return {
-  						'tot_emp' : employment,
-  						'center_x': coords[0][0],
-  						'center_y': coords[0][1]
-  					};
-  				}
-
-  				// draw circles logic
   				var nested = d3.nest()
   					.key(function(d) {
   						return d['year'].getUTCFullYear();
-  					}) //to be able to filter by year, this key must be first
-  					.key(function(d) {
-  						return d['state'];
   					})
-  					.rollup(agg)
+  					.key(function(d) {
+ 						return d['occ_title'];
+ 					})
+  					.rollup(function(leaves){
+  						var max_hourly_salary = d3.max(leaves, function(d){
+  							return d['h_mean'];
+  						})
+
+  						var i = 0;
+  						var len = leaves.length
+  						for (; i<len; i++){
+  							if(leaves[i]['h_mean'] === max_hourly_salary){
+  								var state = leaves[i]['state'];
+  								var coords = projection([+leaves[i]['longitude'], +leaves[i]['latitude']]);
+  								var center_x = coords[0];
+  								var center_y = coords[1];
+  							} else{
+  								continue;
+  							}
+  						}
+
+  						return {
+  							'state' : state,
+  							'max_hourly_salary' : +max_hourly_salary,
+  							'center_x' : center_x,
+  							'center_y' : center_y
+  						};
+  					})
   					.entries(data);
   				console.log(nested);
-  				//get the range of employment numbers across entire dataset	
-  				var employment_max = d3.max(data, function(d) {
-  					return d['tot_emp'];
+  				debugger;
+  				//get the range of hourly mean values across entire dataset
+  				var hourly_salary_extent = d3.extent(data, function(d) {
+  					return +d['h_mean'];
   				});
 
   				var radius = d3.scale.sqrt()
-  					.domain([0, employment_max])
-  					.range([0,12]);
+  					.domain(hourly_salary_extent)
+  					.range([0,10]);
 
   				function key_func(d) {
   					return d['key'];
   				}
 
-  				
+  				//add all possible circles
+  				svg.append('g')
+  						.attr("class", "bubble")
+  						.selectAll("circle")
+  						.data(nested, key_func)
+  						.enter()
+  						.append("circle")
+  						.attr('cx', function(d){
+  							var i = 0;
+  							var len = d.values.length;
+  							for (;i<len;i++) {
+  								if (d.values[i]['key'] === "Computer and Mathematical Occupations")
+  									var x = d.values[i].values['center_x']
+  							}
+  							return x;
+  						})
+  						.attr('cy', function(d){
+  							var i = 0;
+  							var len = d.values.length;
+  							for(;i<len;i++){
+  								if (d.values[i]['key'] === "Computer and Mathematical Occupations")
+  									var y = d.values[i].values['center_y']
+  							}
+  							return y;
+  						})
+  						.attr('r', function(d){
+  							var i = 0;
+  							var len = d.values.length;
+  							for(;i<len;i++){
+  								if (d.values[i]['key'] === "Computer and Mathematical Occupations")
+  									var r = radius(d.values[i].values['max_hourly_salary'])
+  							}
+  							return r;
+  						})
+
 
   				function update(year) {
                 	var filtered = nested.filter(function(d){
                 		return new Date(d['key']).getUTCFullYear() === year;
-                	}); 
+                	});
 
-                	//flatten the nested array so that there is an object for each state
-                	var filtered2 = filtered[0].values;
+                	console.log(filtered);
+
 
                 	d3.select("h3")
                 		.text(year);
 
-                	//add a circle for every data element possible
-  					svg.append('g')
-  						.attr("class", "bubble")
-  						.selectAll("circle")
-  						.data(filtered2)
-  						.enter()
-  						.append("circle")
-                  		.attr('cx', function(d){
-                  			return d.values['center_x']
-                  		})
-                  		.attr('cy', function(d){
-                  			return d.values['center_y']
-                  		})
-                  		.attr('r', function(d){
-                  			return radius(d.values['tot_emp'])
-                  		});
 
-               		var circles = svg.selectAll('circle')
-                               .data(filtered2);
+             		var circles = svg.selectAll('circle')
+                               .data(filtered, key_func);
 
-             		 circles.exit().remove();
+                    circles.exit().remove();
+
+             		circles.enter()
+             			.append("circle")
+             			.transition()
+             			.duration(500)
+  						.attr('cx', function(d){
+  							var i = 0;
+  							var len = d.values.length;
+  							for (;i<len;i++) {
+  								if (d.values[i]['key'] === "Computer and Mathematical Occupations")
+  									var x = d.values[i].values['center_x']
+  							}
+  							return x;
+  						})
+  						.attr('cy', function(d){
+  							var i = 0;
+  							var len = d.values.length;
+  							for(;i<len;i++){
+  								if (d.values[i]['key'] === "Computer and Mathematical Occupations")
+  									var y = d.values[i].values['center_y']
+  							}
+  							return y;
+  						})
+  						.attr('r', function(d){
+  							var i = 0;
+  							var len = d.values.length;
+  							for(;i<len;i++){
+  								if (d.values[i]['key'] === "Computer and Mathematical Occupations")
+  									var r = radius(d.values[i].values['max_hourly_salary'])
+  							}
+  							return r;
+  						})
+
 
 				}
 
-				var years = [2012, 2013, 2014, 2015, 2016];
+				var years = [2010, 2011, 2012, 2013, 2014, 2015, 2016];
 
 				var year_idx = 0;
 
