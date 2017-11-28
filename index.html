@@ -14,6 +14,18 @@
       	font-weight: lighter;
     	}
 
+    	div.year_buttons {
+    		position: fixed;
+    		top: 5px;
+    		left: 50px;
+    	}
+
+    	div.year_buttons div {
+        background-color: rgb(251, 201, 127);
+        padding: 3px;
+        margin: 7px;
+      }
+
     	html,
     	body,
     	svg {
@@ -29,7 +41,6 @@
     	}
 
     	circle {
-    		fill: orange;
     		stroke: black;
     		stroke-width: 0.7;
     		opacity: 0.7;
@@ -40,7 +51,7 @@
   		function draw(geo_data) {
   			d3.select("body")
   				.append("h2")
-  				.text("Max Mean Salary by Occupation Group");
+  				.text("Highest Average Salary per Year");
 
   			d3.select("body")
   				.append("h3")
@@ -101,8 +112,7 @@
   						};
   					})
   					.entries(data);
-  				console.log(nested);
-  				debugger;
+
   				//get the range of hourly mean values across entire dataset
   				var hourly_salary_extent = d3.extent(data, function(d) {
   					return +d['h_mean'];
@@ -116,93 +126,119 @@
   					return d['key'];
   				}
 
-  				//add all possible circles
-  				svg.append('g')
-  						.attr("class", "bubble")
-  						.selectAll("circle")
-  						.data(nested, key_func)
-  						.enter()
-  						.append("circle")
-  						.attr('cx', function(d){
-  							var i = 0;
-  							var len = d.values.length;
-  							for (;i<len;i++) {
-  								if (d.values[i]['key'] === "Computer and Mathematical Occupations")
-  									var x = d.values[i].values['center_x']
-  							}
-  							return x;
-  						})
-  						.attr('cy', function(d){
-  							var i = 0;
-  							var len = d.values.length;
-  							for(;i<len;i++){
-  								if (d.values[i]['key'] === "Computer and Mathematical Occupations")
-  									var y = d.values[i].values['center_y']
-  							}
-  							return y;
-  						})
-  						.attr('r', function(d){
-  							var i = 0;
-  							var len = d.values.length;
-  							for(;i<len;i++){
-  								if (d.values[i]['key'] === "Computer and Mathematical Occupations")
-  									var r = radius(d.values[i].values['max_hourly_salary'])
-  							}
-  							return r;
-  						})
 
+  				//add all possible invisible circles
+				var industries = ["Legal Occupations", 
+					"Management Occupations",
+					"Healthcare Practitioners and Technical Occupations", 
+					"Computer and Mathematical Occupations", 
+					"Architecture and Engineering Occupations", 
+					"Business and Financial Operations Occupations", 
+					"Life, Physical, and Social Science Occupations", 
+					"Arts, Design, Entertainment, Sports, and Media Occupations", 
+					"Education, Training, and Library Occupations",
+					"Protective Service Occupations",
+					"Construction and Extraction Occupations",
+					"Sales and Related Occupations",
+					"Community and Social Service Occupations",
+					"Production Occupations",
+					"Installation, Maintenance, and Repair Occupations",
+					"Transportation and Material Moving Occupations",
+					"Farming, Fishing, and Forestry Occupations",
+					"Office and Administrative Support Occupations",
+					"Healthcare Support Occupations",		
+					"Personal Care and Service Occupations",
+					"Building and Grounds Cleaning and Maintenance Occupations",
+					"Food Preparation and Serving Related Occupations"];
+
+				var fills = ["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928", "#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5", "#d9d9d9",  "#bc80bd"]
+
+				for (var ind_idx = 0; ind_idx<industries.length; ind_idx++){
+					svg.append('g')
+	  					.attr("class", "bubble")
+	  					.selectAll("circle")
+	  					.data(nested, key_func)
+	  					.enter()
+	  					.append("circle")
+	  					.attr('cx', function(d) { 
+	  						for (var idx = 0; idx < d.values.length; idx++){
+		  						if (d.values[idx]['key'] === industries[ind_idx]){
+		  							var center_x = d.values[idx].values['center_x'];
+		  						}
+		  					}
+		  					return center_x;
+		  				})
+		  				.attr('cy', function(d) { 
+	  						for (var idx = 0; idx < d.values.length; idx++){
+		  						if (d.values[idx]['key'] === industries[ind_idx]){
+		  							var center_y = d.values[idx].values['center_y'];
+		  						}
+		  					}
+		  					return center_y;
+		  				})
+		  				.attr('r', function(d) { 
+	  						for (var idx = 0; idx < d.values.length; idx++){
+		  						if (d.values[idx]['key'] === industries[ind_idx]){
+		  							var r = radius(d.values[idx].values['max_hourly_salary']);
+		  						}
+		  					}
+		  					return r;
+		  				})
+		  				.attr("fill", fills[ind_idx])
+		  			}
+		  			
+
+                
 
   				function update(year) {
                 	var filtered = nested.filter(function(d){
                 		return new Date(d['key']).getUTCFullYear() === year;
                 	});
 
-                	console.log(filtered);
-
 
                 	d3.select("h3")
                 		.text(year);
 
 
-             		var circles = svg.selectAll('circle')
-                               .data(filtered, key_func);
+	             	var circles = svg.selectAll('circle')
+	                               .data(filtered, key_func);
 
-                    circles.exit().remove();
-
-             		circles.enter()
-             			.append("circle")
-             			.transition()
-             			.duration(500)
-  						.attr('cx', function(d){
-  							var i = 0;
-  							var len = d.values.length;
-  							for (;i<len;i++) {
-  								if (d.values[i]['key'] === "Computer and Mathematical Occupations")
-  									var x = d.values[i].values['center_x']
-  							}
-  							return x;
-  						})
-  						.attr('cy', function(d){
-  							var i = 0;
-  							var len = d.values.length;
-  							for(;i<len;i++){
-  								if (d.values[i]['key'] === "Computer and Mathematical Occupations")
-  									var y = d.values[i].values['center_y']
-  							}
-  							return y;
-  						})
-  						.attr('r', function(d){
-  							var i = 0;
-  							var len = d.values.length;
-  							for(;i<len;i++){
-  								if (d.values[i]['key'] === "Computer and Mathematical Occupations")
-  									var r = radius(d.values[i].values['max_hourly_salary'])
-  							}
-  							return r;
-  						})
+	                circles.exit().remove();
 
 
-				}
+	                for (var ind_idx = 0; ind_idx<industries.length; ind_idx++){
+		             	circles.enter()
+		             		.append("circle")
+		             		.transition()
+		             		.duration(500)
+		  					.attr('cx', function(d) { 
+	  							for (var idx = 0; idx < d.values.length; idx++){
+		  							if (d.values[idx]['key'] === industries[ind_idx]){
+		  								var center_x = d.values[idx].values['center_x'];
+		  							}
+		  						}
+		  						return center_x;
+		  					})
+		  					.attr('cy', function(d) { 
+	  						for (var idx = 0; idx < d.values.length; idx++){
+		  						if (d.values[idx]['key'] === industries[ind_idx]){
+		  							var center_y = d.values[idx].values['center_y'];
+		  							}
+		  						}
+		  						return center_y;
+		  					})
+		  					.attr('r', function(d) { 
+	  						for (var idx = 0; idx < d.values.length; idx++){
+		  						if (d.values[idx]['key'] === industries[ind_idx]){
+		  							var r = radius(d.values[idx].values['max_hourly_salary']);
+		  							}
+		  						}
+		  						return r;
+		  					})
+		  					.attr("fill", fills[ind_idx])
+		  				}
+		  			}
+					
 
 				var years = [2010, 2011, 2012, 2013, 2014, 2015, 2016];
 
@@ -215,6 +251,31 @@
 
 					if(year_idx >= years.length) {
 						clearInterval(year_interval);
+
+						var buttons = d3.select("body")
+							.append("div")
+							.attr("class", "year_buttons")
+							.selectAll("div")
+							.data(years)
+							.enter()
+							.append("div")
+							.text(function(d) {
+								return d;
+							})
+						buttons.on("click", function(d) {
+							d3.select(".year_buttons")
+								.selectAll("div")
+								.transition()
+								.duration(500)
+								.style("color", "black")
+								.style("background", "rgb(251, 201, 127)");
+							d3.select(this)
+								.transition()
+								.duration(500)
+								.style("background", "lightBlue")
+								.style("color", "white");
+							update(d);
+						});
 					}
 				}, 1000);
 
@@ -226,7 +287,6 @@
    			d3.csv("./State_OES.csv", function(d) {
     		// transform data
     			d['year'] = format.parse(d['year']);
-    			d['tot_emp'] = +d['tot_emp'];
     			return d;
     		}, plot_points);
    		};
