@@ -146,7 +146,7 @@
   								var center_x = coords[0];
   								var center_y = coords[1];
   							} else if (leaves[i]['tot_emp'] === max_employment){
-  								var emp_state = leaves[i]['area'];
+  								var emp_state = leaves[i]['state'];
   							} else{
   								continue;
   							}
@@ -259,9 +259,7 @@
 
 			  						if (selected_data[idx]['key']===selectValue){
 			  							var emp_state = selected_data[idx].values['emp_state'];
-			  							console.log(emp_state);
-			  							if(d.properties.GEOID === emp_state){
-			  								console.log(d.properties);
+			  							if(d.properties.NAME === emp_state){
 			  								return "darkBlue";
 			  							}else{
 			  								return "lightBlue";
@@ -327,6 +325,9 @@
    			d3.csv("./State_OES.csv", function(d) {
     		// transform data
     			d['year'] = format.parse(d['year']);
+    			d['tot_emp'] = +d['tot_emp'];
+    			d['h_mean'] = +d['h_mean'];
+    			
     			return d;
     		}, plot_points);
    		};
