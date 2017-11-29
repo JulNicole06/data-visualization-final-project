@@ -80,7 +80,7 @@
   				.enter()
   				.append('path')
   				.attr('d', path)
-  				.style('fill', 'rgb(9,157,217)')
+  				.style('fill', 'lightBlue')
   				.style('stroke', 'black')
   				.style('stroke-width', 0.5);
 
@@ -133,30 +133,35 @@
   					.rollup(function(leaves){
   						var max_hourly_salary = d3.max(leaves, function(d){
   							return d['h_mean'];
-  						})
+  						});
 
-  						var i = 0;
-  						var len = leaves.length
-  						for (; i<len; i++){
+  						var max_employment = d3.max(leaves, function(d){
+  							return d['tot_emp']
+  						});
+
+  						for (var i = 0; i<leaves.length; i++){
   							if(leaves[i]['h_mean'] === max_hourly_salary){
-  								var state = leaves[i]['state'];
+  								var wage_state = leaves[i]['state'];
   								var coords = projection([+leaves[i]['longitude'], +leaves[i]['latitude']]);
   								var center_x = coords[0];
   								var center_y = coords[1];
+  							} else if (leaves[i]['tot_emp'] === max_employment){
+  								var emp_state = leaves[i]['area'];
   							} else{
   								continue;
   							}
   						}
 
   						return {
-  							'state' : state,
+  							'state' : wage_state,
   							'max_hourly_salary' : +max_hourly_salary,
   							'center_x' : center_x,
-  							'center_y' : center_y
+  							'center_y' : center_y,
+  							'emp_state': emp_state
   						};
   					})
   					.entries(data);
-  				
+  				console.log(nested);
   				//get the range of hourly mean values across entire dataset
   				var hourly_salary_extent = d3.extent(data, function(d) {
   					return +d['h_mean'];
@@ -197,15 +202,7 @@
 			  				}
 			  				return center_y;
 			  			})
-			  			.attr('r', function(d) { 
-		  					for (var idx = 0; idx < d.values.length; idx++){
-			  					if (d.values[idx]['key'] === selectValue){
-			  						var r = radius(d.values[idx].values['max_hourly_salary']);
-			  					}
-			  				}
-			  				return r;
-			  			})
-			  			.attr("fill", "#a6cee3")
+			  			.attr('r', 0)
 			  			
 			  			
 
@@ -215,7 +212,6 @@
 	                	var filtered = nested.filter(function(d){
 	                		return new Date(d['key']).getUTCFullYear() === year;
 	                	});
-
 
 	                	d3.select("h3")
 	                		.text(year);
@@ -254,8 +250,33 @@
 			  					}
 			  					return r;
 			  				})
-			  				.attr("fill", "#d95f02")
+			  				.attr("fill", "#d95f02");
+
+			  				function color_high_emp_state(d){
+			  					var selected_data = filtered[0].values;
+
+			  					for(var idx = 0; idx< selected_data.length; idx++){
+
+			  						if (selected_data[idx]['key']===selectValue){
+			  							var emp_state = selected_data[idx].values['emp_state'];
+			  							console.log(emp_state);
+			  							if(d.properties.GEOID === emp_state){
+			  								console.log(d.properties);
+			  								return "darkBlue";
+			  							}else{
+			  								return "lightBlue";
+			  							}
+			  						}
+			  					}
+			  				}
 			  				
+			  				svg.selectAll('path')
+			  					.transition()
+			  					.duration(500)
+			  					.style('fill', color_high_emp_state)
+			  					.style('stroke', "black")
+			  				
+
 			  			}
 						
 
@@ -285,12 +306,12 @@
 								d3.select(".year_buttons")
 									.selectAll("div")
 									.transition()
-									.duration(500)
+									.duration(100)
 									.style("color", "black")
 									.style("background", "rgb(251, 201, 127)");
 								d3.select(this)
 									.transition()
-									.duration(500)
+									.duration(100)
 									.style("background", "lightBlue")
 									.style("color", "white");
 								update(d);
