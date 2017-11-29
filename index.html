@@ -21,10 +21,10 @@
     	}
 
     	div.year_buttons div {
-        background-color: rgb(251, 201, 127);
-        padding: 3px;
-        margin: 7px;
-      }
+       		background-color: rgb(251, 201, 127);
+        	padding: 3px;
+        	margin: 7px;
+      	}
 
     	html,
     	body,
@@ -44,6 +44,12 @@
     		stroke: black;
     		stroke-width: 0.7;
     		opacity: 0.7;
+    	}
+
+    	.select {
+    		position: fixed;
+    		top: 100px;
+    		left: 500px;
     	}
 
   	</style>
@@ -78,7 +84,44 @@
   				.style('stroke', 'black')
   				.style('stroke-width', 0.5);
 
+
   			function plot_points(data) {
+  				//add all possible invisible circles
+				var industries = ["Select an Industry: ", 
+					"Legal Occupations", 
+					"Management Occupations",
+					"Healthcare Practitioners and Technical Occupations", 
+					"Architecture and Engineering Occupations", 
+					"Business and Financial Operations Occupations", 
+					"Computer and Mathematical Occupations",
+					"Life, Physical, and Social Science Occupations", 
+					"Arts, Design, Entertainment, Sports, and Media Occupations", 
+					"Education, Training, and Library Occupations",
+					"Protective Service Occupations",
+					"Construction and Extraction Occupations",
+					"Sales and Related Occupations",
+					"Community and Social Service Occupations",
+					"Production Occupations",
+					"Installation, Maintenance, and Repair Occupations",
+					"Transportation and Material Moving Occupations",
+					"Farming, Fishing, and Forestry Occupations",
+					"Office and Administrative Support Occupations",
+					"Healthcare Support Occupations",		
+					"Personal Care and Service Occupations",
+					"Building and Grounds Cleaning and Maintenance Occupations",
+					"Food Preparation and Serving Related Occupations"];
+
+				var select = d3.select('body')
+					.append('select')
+					.attr('class', 'select')
+					.on('change', onchange);
+
+				var options = select.selectAll('option')
+					.data(industries).enter()
+					.append('option')
+					.text(function(d){
+						return d;
+					});
 
   				var nested = d3.nest()
   					.key(function(d) {
@@ -113,7 +156,7 @@
   						};
   					})
   					.entries(data);
-  				console.log(nested);
+  				
   				//get the range of hourly mean values across entire dataset
   				var hourly_salary_extent = d3.extent(data, function(d) {
   					return +d['h_mean'];
@@ -127,158 +170,134 @@
   					return d['key'];
   				}
 
+  				select.on("change", function(d) {
 
-  				//add all possible invisible circles
-				var industries = ["Legal Occupations", 
-					"Management Occupations",
-					"Healthcare Practitioners and Technical Occupations", 
-					"Computer and Mathematical Occupations", 
-					"Architecture and Engineering Occupations", 
-					"Business and Financial Operations Occupations", 
-					"Life, Physical, and Social Science Occupations", 
-					"Arts, Design, Entertainment, Sports, and Media Occupations", 
-					"Education, Training, and Library Occupations",
-					"Protective Service Occupations",
-					"Construction and Extraction Occupations",
-					"Sales and Related Occupations",
-					"Community and Social Service Occupations",
-					"Production Occupations",
-					"Installation, Maintenance, and Repair Occupations",
-					"Transportation and Material Moving Occupations",
-					"Farming, Fishing, and Forestry Occupations",
-					"Office and Administrative Support Occupations",
-					"Healthcare Support Occupations",		
-					"Personal Care and Service Occupations",
-					"Building and Grounds Cleaning and Maintenance Occupations",
-					"Food Preparation and Serving Related Occupations"];
+  					//select which industry to look at from the dropdown menu
+  					var selectValue = d3.select('select').property('value')
 
-				var fills = ["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928", "#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5", "#d9d9d9",  "#bc80bd"]
-
-				for (var ind_idx = 0; ind_idx<industries.length; ind_idx++){
 					svg.append('g')
-	  					.attr("class", "bubble")
-	  					.selectAll("circle")
-	  					.data(nested, key_func)
-	  					.enter()
-	  					.append("circle")
-	  					.attr('cx', function(d) { 
-	  						for (var idx = 0; idx < d.values.length; idx++){
-		  						if (d.values[idx]['key'] === industries[ind_idx]){
-		  							var center_x = d.values[idx].values['center_x'];
-		  						}
-		  					}
-		  					return center_x;
-		  				})
-		  				.attr('cy', function(d) { 
-	  						for (var idx = 0; idx < d.values.length; idx++){
-		  						if (d.values[idx]['key'] === industries[ind_idx]){
-		  							var center_y = d.values[idx].values['center_y'];
-		  						}
-		  					}
-		  					return center_y;
-		  				})
-		  				.attr('r', function(d) { 
-	  						for (var idx = 0; idx < d.values.length; idx++){
-		  						if (d.values[idx]['key'] === industries[ind_idx]){
-		  							var r = radius(d.values[idx].values['max_hourly_salary']);
-		  						}
-		  					}
-		  					return r;
-		  				})
-		  				.attr("fill", fills[ind_idx])
-		  			}
-		  			
+		  				.attr("class", "bubble")
+		  				.selectAll("circle")
+		  				.data(nested, key_func)
+		  				.enter()
+		  				.append("circle")
+		  				.attr('cx', function(d) { 
+		  					for (var idx = 0; idx < d.values.length; idx++){
+			  					if (d.values[idx]['key'] === selectValue){
+			  						var center_x = d.values[idx].values['center_x'];
+			  					}
+			  				}
+			  				return center_x;
+			  			})
+			  			.attr('cy', function(d) { 
+		  					for (var idx = 0; idx < d.values.length; idx++){
+			  					if (d.values[idx]['key'] === selectValue){
+			  						var center_y = d.values[idx].values['center_y'];
+			  					}
+			  				}
+			  				return center_y;
+			  			})
+			  			.attr('r', function(d) { 
+		  					for (var idx = 0; idx < d.values.length; idx++){
+			  					if (d.values[idx]['key'] === selectValue){
+			  						var r = radius(d.values[idx].values['max_hourly_salary']);
+			  					}
+			  				}
+			  				return r;
+			  			})
+			  			.attr("fill", "#a6cee3")
+			  			
+			  			
 
-                
+	                
 
-  				function update(year) {
-                	var filtered = nested.filter(function(d){
-                		return new Date(d['key']).getUTCFullYear() === year;
-                	});
-
-
-                	d3.select("h3")
-                		.text(year);
+	  				function update(year) {
+	                	var filtered = nested.filter(function(d){
+	                		return new Date(d['key']).getUTCFullYear() === year;
+	                	});
 
 
-	             	var circles = svg.selectAll('circle')
-	                               .data(filtered, key_func);
+	                	d3.select("h3")
+	                		.text(year);
 
-	                circles.exit().remove();
 
-	                for (var ind_idx = 0; ind_idx<industries.length; ind_idx++){
-		             	circles.enter()
-		             		.append("circle")
-		             		.transition()
-		             		.duration(500)
-		  					.attr('cx', function(d) { 
-	  							for (var idx = 0; idx < d.values.length; idx++){
-		  							if (d.values[idx]['key'] === industries[ind_idx]){
-		  								var center_x = d.values[idx].values['center_x'];
-		  							}
-		  						}
-		  						return center_x;
-		  					})
-		  					.attr('cy', function(d) { 
-	  						for (var idx = 0; idx < d.values.length; idx++){
-		  						if (d.values[idx]['key'] === industries[ind_idx]){
-		  							var center_y = d.values[idx].values['center_y'];
-		  							}
-		  						}
-		  						return center_y;
-		  					})
-		  					.attr('r', function(d) { 
-	  						for (var idx = 0; idx < d.values.length; idx++){
-		  						if (d.values[idx]['key'] === industries[ind_idx]){
-		  							var r = radius(d.values[idx].values['max_hourly_salary']);
-		  							}
-		  						}
-		  						return r;
-		  					})
-		  					.attr("fill", fills[ind_idx])
-		  				}
-		  			}
-					
+		             	var circles = svg.selectAll('circle')
+		                               .data(filtered, key_func);
 
-				var years = [2010, 2011, 2012, 2013, 2014, 2015, 2016];
+		                circles.exit().remove();
 
-				var year_idx = 0;
+			             circles.enter()
+			             	.append("circle")
+			             	.transition()
+			             	.duration(500)
+			  				.attr('cx', function(d) { 
+		  						for (var idx = 0; idx < d.values.length; idx++){
+			  						if (d.values[idx]['key'] === selectValue){
+			  							var center_x = d.values[idx].values['center_x'];
+			  						}
+			  					}
+			  					return center_x;
+			  				})
+			  				.attr('cy', function(d) { 
+		  					for (var idx = 0; idx < d.values.length; idx++){
+			  					if (d.values[idx]['key'] === selectValue){
+			  						var center_y = d.values[idx].values['center_y'];
+			  						}
+			  					}
+			  					return center_y;
+			  				})
+			  				.attr('r', function(d) { 
+		  					for (var idx = 0; idx < d.values.length; idx++){
+			  					if (d.values[idx]['key'] === selectValue){
+			  						var r = radius(d.values[idx].values['max_hourly_salary']);
+			  						}
+			  					}
+			  					return r;
+			  				})
+			  				.attr("fill", "#d95f02")
+			  				
+			  			}
+						
 
-				var year_interval = setInterval(function() {
-					update(years[year_idx]);
+					var years = [2010, 2011, 2012, 2013, 2014, 2015, 2016];
 
-					year_idx++;
+					var year_idx = 0;
 
-					if(year_idx >= years.length) {
-						clearInterval(year_interval);
+					var year_interval = setInterval(function() {
+						update(years[year_idx]);
 
-						var year_buttons = d3.select("body")
-							.append("div")
-							.attr("class", "year_buttons")
-							.selectAll("div")
-							.data(years)
-							.enter()
-							.append("div")
-							.text(function(d) {
-								return d;
-							})
-						year_buttons.on("click", function(d) {
-							d3.select(".year_buttons")
+						year_idx++;
+
+						if(year_idx >= years.length) {
+							clearInterval(year_interval);
+
+							var year_buttons = d3.select("body")
+								.append("div")
+								.attr("class", "year_buttons")
 								.selectAll("div")
-								.transition()
-								.duration(500)
-								.style("color", "black")
-								.style("background", "rgb(251, 201, 127)");
-							d3.select(this)
-								.transition()
-								.duration(500)
-								.style("background", "lightBlue")
-								.style("color", "white");
-							update(d);
-						});
-					}
-				}, 1000);
-
+								.data(years)
+								.enter()
+								.append("div")
+								.text(function(d) {
+									return d;
+								})
+							year_buttons.on("click", function(d) {
+								d3.select(".year_buttons")
+									.selectAll("div")
+									.transition()
+									.duration(500)
+									.style("color", "black")
+									.style("background", "rgb(251, 201, 127)");
+								d3.select(this)
+									.transition()
+									.duration(500)
+									.style("background", "lightBlue")
+									.style("color", "white");
+								update(d);
+							});
+						}
+					}, 1000);
+				})
 			}
 
   			var format = d3.time.format("%Y");
