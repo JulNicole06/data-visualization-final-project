@@ -153,12 +153,18 @@
   							}
   						}
 
+  						//for (var i = 0; i<leaves.length; i++){
+  							//if (leaves[i]['tot_emp'] === max_employment){
+  								//var emp_state = leaves[i]['state'];
+  							//} else{
+  								//continue;
+  							//}
+  						//}
+
+  						//get list of all states and corresponding employment numbers
+  						employment_array = []
   						for (var i = 0; i<leaves.length; i++){
-  							if (leaves[i]['tot_emp'] === max_employment){
-  								var emp_state = leaves[i]['state'];
-  							} else{
-  								continue;
-  							}
+  							employment_array.push([(leaves[i]['state']), (leaves[i]['tot_emp'])])
   						}
 
   						return {
@@ -166,11 +172,12 @@
   							'max_hourly_salary' : +max_hourly_salary,
   							'center_x' : center_x,
   							'center_y' : center_y,
-  							'emp_state': emp_state
+  							//'emp_state': emp_state
+  							'employment': employment_array
   						};
   					})
   					.entries(data);
-
+  					console.log(nested);
   				//get the range of hourly mean values across entire dataset
   				var hourly_salary_extent = d3.extent(data, function(d) {
   					return +d['h_mean'];
@@ -252,28 +259,54 @@
 			  				.attr("fill", "#d95f02");
 
 
-			  			function color_high_emp_state(d){
+			  			//function color_high_emp_state(d){
 			  				//Selects the state with the highest total employment for a 
 			  				//selected industry and fills it with dark blue
-			  				var selected_data = filtered[0].values;
+			  				//var selected_data = filtered[0].values;
 
-			  				for(var idx = 0; idx< selected_data.length; idx++){
+			  				//for(var idx = 0; idx< selected_data.length; idx++){
 
-			  					if (selected_data[idx]['key']===selectValue){
-			  						var emp_state = selected_data[idx].values['emp_state'];
-			  						if(d.properties.NAME === emp_state){
-			  							return "darkBlue";
-			  						}else{
-			  							return "lightBlue";
-			  						}
-			  					}
-			  				}
-			  			}
+			  					//if (selected_data[idx]['key']===selectValue){
+			  						//var emp_state = selected_data[idx].values['emp_state'];
+			  						//if(d.properties.NAME === emp_state){
+			  							//return "darkBlue";
+			  						//}else{
+			  							//return "lightBlue";
+			  						//}
+			  					//}
+			  				//}
+			  			//}
+			  			function choropleth(d){
+				  			var selected_data = filtered[0].values;
+
+				  			for (var i = 0; i < selected_data.length; i++){
+
+				  				if (selected_data[i]['key'] === selectValue){
+				  					var employment_data = selected_data[i].values['employment'];
+
+				  					var employment_extent = d3.extent(employment_data, function(d){
+				  						return d[1];
+				  					});
+
+
+				  					var color = d3.scale.quantize()
+				  						.domain(employment_extent)
+    									.range(["#eff3ff", "#c6dbef", "#9ecae1", "#6baed6", "#3182bd", "#08519c"]);
+
+				  					for (var i = 0; i<employment_data.length; i++){
+				  						if (d.properties.NAME === employment_data[i][0]){
+				  							return color(employment_data[i][1]);
+				  						}
+				  					}
+				  				}
+				  			}
+
+				  		}
 			  				
 			  			svg.selectAll('path')
 			  				.transition()
 			  				.duration(500)
-			  				.style('fill', color_high_emp_state)
+			  				.style('fill', choropleth)
 			  				.style('stroke', "black")
 			  				
 
