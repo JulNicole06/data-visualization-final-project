@@ -2,15 +2,20 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="https://d3js.org/d3.v3.min.js"></script>
   	<style>
-    	h2 {
+    	h1 {
       	text-align: center;
+      	font-size:  100%;
+    	}
+
+    	h2 {
+    	font-size: 90%;
     	}
 
     	h3 {
      	text-align: center;
-      	font-size: 80%;
+      	font-size: 100%;
       	font-weight: lighter;
     	}
 
@@ -21,7 +26,6 @@
     	}
 
     	div.year_buttons div {
-       		background-color: rgb(251, 201, 127);
         	padding: 3px;
         	margin: 7px;
       	}
@@ -35,7 +39,6 @@
     	}
 
     	.map {
-    		outline-style: solid;
     		height: auto;
     		width: 100%;
     	}
@@ -56,8 +59,8 @@
   	<script type="text/javascript">
   		function draw(geo_data) {
   			d3.select("body")
-  				.append("h2")
-  				.text("Highest Average Salary per Year");
+  				.append("h1")
+  				.text("Highest Average Salary vs Highest Employment Numbers");
 
   			d3.select("body")
   				.append("h3")
@@ -167,7 +170,6 @@
   						};
   					})
   					.entries(data);
-  				console.log(nested);
 
   				//get the range of hourly mean values across entire dataset
   				var hourly_salary_extent = d3.extent(data, function(d) {
@@ -187,33 +189,33 @@
   					//select which industry to look at from the dropdown menu
   					var selectValue = d3.select('select').property('value')
 
+  					function circle_values(d, type){
+  						//return the x, y coordinates and radius values for circles according
+  						//to the selected industry from the dropdown menu
+		                	for (var idx = 0; idx< d.values.length; idx++){
+		                		if (d.values[idx]['key'] === selectValue){
+		                			var center_x = d.values[idx].values['center_x'];
+		                			var center_y = d.values[idx].values['center_y'];
+		                			var r = radius(d.values[idx].values['max_hourly_salary']);
+		                		}
+		                	}
+		                	switch(type) {
+		                		case 'center_x':
+		                			return center_x;
+		                			break;
+		                		case 'center_y':
+		                			return center_y;
+		                			break;
+		                		case 'r':
+		                			return r;
+		                	}
+		                }
+		            //create empty placeholders for circles to get appended to
 					svg.append('g')
 		  				.attr("class", "bubble")
 		  				.selectAll("circle")
 		  				.data(nested, key_func)
 		  				.enter()
-		  				.append("circle")
-		  				.attr('cx', function(d) { 
-		  					for (var idx = 0; idx < d.values.length; idx++){
-			  					if (d.values[idx]['key'] === selectValue){
-			  						var center_x = d.values[idx].values['center_x'];
-			  					}
-			  				}
-			  				return center_x;
-			  			})
-			  			.attr('cy', function(d) { 
-		  					for (var idx = 0; idx < d.values.length; idx++){
-			  					if (d.values[idx]['key'] === selectValue){
-			  						var center_y = d.values[idx].values['center_y'];
-			  					}
-			  				}
-			  				return center_y;
-			  			})
-			  			.attr('r', 0)
-			  			
-			  			
-
-	                
 
 	  				function update(year) {
 	                	var filtered = nested.filter(function(d){
@@ -223,63 +225,56 @@
 	                	d3.select("h3")
 	                		.text(year);
 
-
 		             	var circles = svg.selectAll('circle')
 		                               .data(filtered, key_func);
 
+		                //remove circles when transitioning to another year
 		                circles.exit().remove();
 
-			             circles.enter()
+
+		                //add new circles for next years data in animation
+			            circles.enter()
 			             	.append("circle")
 			             	.transition()
 			             	.duration(500)
-			  				.attr('cx', function(d) { 
-		  						for (var idx = 0; idx < d.values.length; idx++){
-			  						if (d.values[idx]['key'] === selectValue){
-			  							var center_x = d.values[idx].values['center_x'];
-			  						}
-			  					}
-			  					return center_x;
+			  				.attr('cx', function(d){
+			  					var result = circle_values(d, 'center_x');
+			  					return result;
 			  				})
-			  				.attr('cy', function(d) { 
-		  					for (var idx = 0; idx < d.values.length; idx++){
-			  					if (d.values[idx]['key'] === selectValue){
-			  						var center_y = d.values[idx].values['center_y'];
-			  						}
-			  					}
-			  					return center_y;
+			  				.attr('cy', function(d){
+			  					 var result = circle_values(d, 'center_y');
+			  					 return result;
 			  				})
-			  				.attr('r', function(d) { 
-		  					for (var idx = 0; idx < d.values.length; idx++){
-			  					if (d.values[idx]['key'] === selectValue){
-			  						var r = radius(d.values[idx].values['max_hourly_salary']);
-			  						}
-			  					}
-			  					return r;
+			  				.attr('r', function(d){
+			  					var result = circle_values(d, 'r');
+			  					return result;
 			  				})
 			  				.attr("fill", "#d95f02");
 
-			  				function color_high_emp_state(d){
-			  					var selected_data = filtered[0].values;
 
-			  					for(var idx = 0; idx< selected_data.length; idx++){
+			  			function color_high_emp_state(d){
+			  				//Selects the state with the highest total employment for a 
+			  				//selected industry and fills it with dark blue
+			  				var selected_data = filtered[0].values;
 
-			  						if (selected_data[idx]['key']===selectValue){
-			  							var emp_state = selected_data[idx].values['emp_state'];
-			  							if(d.properties.NAME === emp_state){
-			  								return "darkBlue";
-			  							}else{
-			  								return "lightBlue";
-			  							}
+			  				for(var idx = 0; idx< selected_data.length; idx++){
+
+			  					if (selected_data[idx]['key']===selectValue){
+			  						var emp_state = selected_data[idx].values['emp_state'];
+			  						if(d.properties.NAME === emp_state){
+			  							return "darkBlue";
+			  						}else{
+			  							return "lightBlue";
 			  						}
 			  					}
 			  				}
+			  			}
 			  				
-			  				svg.selectAll('path')
-			  					.transition()
-			  					.duration(500)
-			  					.style('fill', color_high_emp_state)
-			  					.style('stroke', "black")
+			  			svg.selectAll('path')
+			  				.transition()
+			  				.duration(500)
+			  				.style('fill', color_high_emp_state)
+			  				.style('stroke', "black")
 			  				
 
 			  			}
@@ -290,11 +285,15 @@
 					var year_idx = 0;
 
 					var year_interval = setInterval(function() {
+						//animate visualization thru each year
 						update(years[year_idx]);
 
 						year_idx++;
 
-						if(year_idx >= years.length) {
+						//once animation is finished looping thru years, 
+						//create buttons to loop back thru speciic years
+						//via clicking on the button
+						if(year_idx >= years.length){
 							clearInterval(year_interval);
 
 							var year_buttons = d3.select("body")
@@ -307,17 +306,20 @@
 								.text(function(d) {
 									return d;
 								})
+								.style("color", "black")
+								.style("background", "lightBlue");
+
 							year_buttons.on("click", function(d) {
 								d3.select(".year_buttons")
 									.selectAll("div")
 									.transition()
 									.duration(500)
 									.style("color", "black")
-									.style("background", "rgb(251, 201, 127)");
+									.style("background", "lightBlue");
 								d3.select(this)
 									.transition()
 									.duration(500)
-									.style("background", "lightBlue")
+									.style("background", "darkBlue")
 									.style("color", "white");
 								update(d);
 							});
