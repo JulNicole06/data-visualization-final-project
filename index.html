@@ -13,36 +13,43 @@
   		h1 {
       		text-align: center;
       		font-size:  100%;
+      		order: 1;
     	}
 
     	h2 {
     		font-size: 90%;
     		text-align: center;
-    	}
-
-    	h3 {
-     		text-align: center;
-      		font-size: 100%;
-      		font-weight: lighter;
+    		order: 2;
     	}
 
     	div.year_buttons {
-    		position: relative;
+    		outline: red dotted;
+    		display: -webkit-flex;
+  			display: flex;
+  			flex-wrap: wrap;
+  			justify-content: space-evenly;
+  			width: 50%;
+  			order: 3;
     	}
 
     	div.year_buttons div {
-        	position: relative;
+        	display: -webkit-flex;
+  			display: flex;
       	}
 
     	html, body, svg{
     		outline:  black solid;
     		display: -webkit-flex;
   			display: flex;
-
+  			justify-content: center;
     	}
 
     	body {
     		flex-direction: column;
+    	}
+
+    	svg{
+    		order: 5;
     	}
 
     	.map {
@@ -62,6 +69,7 @@
     		display: -webkit-flex;
   			display: flex;
     		margin: auto;
+    		order: 4;
     	}
 
 
