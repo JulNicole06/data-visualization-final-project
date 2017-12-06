@@ -7,3 +7,5 @@ This dataset contains information on occupational employment statistics (OES) by
 
 # Resources 
 1. https://www.bls.gov/oes/tables.htm - data in .xls format for each year was downloaded from the Bureau of Labor Statistics website
+
+2. https://discussions.udacity.com/t/help-needed-on-tooltips/234363

@@ -17,9 +17,19 @@
     	}
 
     	h2 {
-    		font-size: 90%;
+    		display: -webkit-flex;
+  			display: flex;
     		text-align: center;
     		order: 2;
+    		font-size: 80%;
+    		width: 50%;
+    		flex-wrap: wrap;
+
+    	}
+
+    	h3 {
+    		text-align: center;
+    		order: 5;
     	}
 
     	div.year_buttons {
@@ -37,6 +47,7 @@
   			display: flex;
   			outline: black solid;
   			outline-width: thin;
+  			background-color: #deebf7;
       	}
 
     	html, body, svg{
@@ -51,7 +62,7 @@
     	}
 
     	svg{
-    		order: 5;
+    		order: 6;
     	}
 
     	.select {
@@ -78,9 +89,11 @@
 		}
 
 		.tooltip{
-			color: white;
-			background: #373737;
+			color: black bold;
 			text-align: center;
+			background: white;
+			outline-color: black;
+			outline-width: thin;
 		}
 
 
@@ -91,12 +104,30 @@
 
   			d3.select("body")
   				.append("h1")
-  				.text("Average Hourly Wages from 2010-2016");
+  				.text("Estimated Average Hourly Wage by State");
 
-
+  			//placeholder
   			d3.select("body")
   				.append("h2")
-  				.text("Select an industry to see how the average salary changes year to year in each state");
+  				.text("The Bureau of Labor Statistics produces wage estimates annually.  This visualization compares average hourly wage estimates for 22 Major Occupational Groups from 2010 to 2016.  Select an occupation group to view the changes in hourly wage estimates each year")
+
+  			//placeholder
+  			d3.select("body")
+  				.append("h3")
+
+  			var years = [2010, 2011, 2012, 2013, 2014, 2015, 2016];
+
+  			var year_buttons = d3.select("body")
+				.append("div")
+				.attr("class", "year_buttons")
+				.selectAll("div")
+				.data(years)
+				.enter()
+				.append("div")
+				.text(function(d) {
+					return d;
+					})
+				.style("color", "black");
 
   			var width = 960,
   				height = 500;
@@ -139,7 +170,7 @@
 
   			function plot_points(data) {
   				//add all possible invisible circles
-				var industries = ["Select an Industry: ", 
+				var industries = ["Select: ", 
 					"Legal Occupations", 
 					"Management Occupations",
 					"Healthcare Practitioners and Technical Occupations", 
@@ -210,21 +241,6 @@
   				function key_func(d) {
   					return d['key'];
   				}
-
-  				var years = [2010, 2011, 2012, 2013, 2014, 2015, 2016];
-
-				var year_buttons = d3.select("body")
-					.append("div")
-					.attr("class", "year_buttons")
-					.selectAll("div")
-					.data(years)
-					.enter()
-					.append("div")
-					.text(function(d) {
-						return d;
-								})
-					.style("color", "black")
-
 
 				//create legend for wage scale
 		  		var colors = ["#f7fbff","#deebf7","#c6dbef","#9ecae1",
@@ -303,23 +319,20 @@
   				select.on("change", function(d) {
 
   					//select which industry to look at from the dropdown menu
-  					var selectValue = d3.select('select').property('value')
+  					var selectValue = d3.select('select').property('value');
 
 	  				function update(year) {
+
+	  					d3.select("h3")
+  							.text(year);
+
+	  					//make tooltip invisible before each year animates to refresh values with each year 
+	  					tooltip.style('visibility', 'hidden');
 
 	                	var filtered = nested.filter(function(d){
 	                		return new Date(d['key']).getUTCFullYear() === year;
 	                	});
 
-	                	//replace this with adding year buttins one at a time as they animate
-	                	//d3.select("h3")
-	                		//.text(year);
-	                	for (var i = 0; i<year_buttons[0].length; i++){
-	                		if (year_buttons[0][i]['innerText'] === year){
-	                			d3.select(year_buttons[0][i])
-	                				.style('background', 'black');
-	                		}
-	                	}
 
 	                	function selectWageData(d){
 	                		var selected_data = filtered[0].values;
@@ -339,12 +352,16 @@
 
 			  			function choropleth(d){
 			  				var wage_data = selectWageData(d);
-			  				return color(wage_data[1])
+			  				if (wage_data !== undefined){
+			  					return color(wage_data[1]);
+			  				}
 				  		}
 
 				  		function tooltipInfo(d){
 				  			var wage_data = selectWageData(d);
-				  			return wage_data[0]+": $"+wage_data[1].toFixed(2);
+				  			if (wage_data !== undefined){
+				  				return wage_data[0]+": $"+wage_data[1].toFixed(2)+"/hr";
+				  			}
 				  		}
 			  				
 			  			svg.selectAll('path')
@@ -357,15 +374,13 @@
 			  				.on("mousemove", function(d) {
                     			return tooltip.style('visibility', 'visible')
                     						.html(tooltipInfo(d))
-                    						.duration(500)
+                    						.transition()
                     						.style("top", (d3.event.layerY) + "px" )
                     						.style("left", (d3.event.layerX) + "px" );
                 			})
-                			.on("mouseout", function() {
-                    			return tooltip.style('visibility', 'hidden');
-               				});
 			  				
 			  			}
+
 						
 			  		var year_idx = 0;
 
@@ -380,6 +395,7 @@
 						//via clicking on the button
 						if(year_idx >= years.length){
 							clearInterval(year_interval);
+
 
 							year_buttons.on("click", function(d) {
 								d3.select(".year_buttons")
