@@ -77,6 +77,12 @@
 			font-size: 60%;
 		}
 
+		.tooltip{
+			color: white;
+			background: #373737;
+			text-align: center;
+		}
+
 
 
   	</style>
@@ -273,7 +279,6 @@
     			li.selectAll("rect")
     				.data(color.range().map(function(col) {
       					var d = color.invertExtent(col);
-      						console.log(d);
       						return d;
     					}))
     				.enter()
@@ -282,17 +287,26 @@
    					.attr("width", 20)
     				.attr("height", 15)
     				.style("fill", function(d) { 
-    					console.log(color(d[0]+.1));
     					return color(d[0]+.1); });
 
 
+				//Create div for invisible tooltip
+    			var tooltip = d3.select( 'body' )
+    				.append( 'div' )
+    				.attr('class', 'tooltip')
+    				.style('position', 'absolute')
+    				.style('z-index', '9999')
+    				.style('visibility', 'hidden')
+    				.text( 'tooltip');
+
+
   				select.on("change", function(d) {
-  					//clear legend for new selection
 
   					//select which industry to look at from the dropdown menu
   					var selectValue = d3.select('select').property('value')
 
 	  				function update(year) {
+
 	                	var filtered = nested.filter(function(d){
 	                		return new Date(d['key']).getUTCFullYear() === year;
 	                	});
@@ -307,8 +321,8 @@
 	                		}
 	                	}
 
-			  			function choropleth(d){
-				  			var selected_data = filtered[0].values;
+	                	function selectWageData(d){
+	                		var selected_data = filtered[0].values;
 
 				  			for (var i = 0; i < selected_data.length; i++){
 				  				if (selected_data[i]['key'] === selectValue){
@@ -318,18 +332,39 @@
 
 				  			for (var i = 0; i < wage_data.length; i++){
 				  				if (wage_data[i][0] === d.properties.NAME){
-				  					return color(wage_data[i][1]);
+				  					return wage_data[i];
 				  				}
 				  			}
+				  		}
+
+			  			function choropleth(d){
+			  				var wage_data = selectWageData(d);
+			  				return color(wage_data[1])
+				  		}
+
+				  		function tooltipInfo(d){
+				  			var wage_data = selectWageData(d);
+				  			return wage_data[0]+": $"+wage_data[1].toFixed(2);
 				  		}
 			  				
 			  			svg.selectAll('path')
 			  				.transition()
 			  				.duration(500)
 			  				.style('fill', choropleth)
-			  				.style('stroke', "black")
-			  				
+			  				.style('stroke', "black");
 
+			  			svg.selectAll('path')
+			  				.on("mousemove", function(d) {
+                    			return tooltip.style('visibility', 'visible')
+                    						.html(tooltipInfo(d))
+                    						.duration(500)
+                    						.style("top", (d3.event.layerY) + "px" )
+                    						.style("left", (d3.event.layerX) + "px" );
+                			})
+                			.on("mouseout", function() {
+                    			return tooltip.style('visibility', 'hidden');
+               				});
+			  				
 			  			}
 						
 			  		var year_idx = 0;
