@@ -221,15 +221,13 @@
 
 
 				//create legend for wage scale
-		  		var colors = ["#f2f0f7", "#dadaeb", "#bcbddc",
-		  				"#9e9ac8", "#756bb1", "#54278f"];
+		  		var colors = ["#f7fbff","#deebf7","#c6dbef","#9ecae1",
+		  			"#6baed6","#4292c6","#2171b5","#08519c","#08306b"];
 	
     			//get min and max wages for entire dataset
     			var wageRange = d3.extent(data, function(d){
     					return d['h_mean'];
     				});
-
-    			console.log(wageRange);
 
 				var color = d3.scale.quantize()
 				  	.domain(wageRange)
@@ -247,16 +245,13 @@
     				.append("text")
     				.attr("class", "legend-title")
     				.attr("y", -5)
-    				.attr("x", -20)
     				.text(function(d) { return d; })
     	
-
+    			//add box surrounding color scale
     			var lb = legend.append("rect")
     				.attr("class", "legend-box")
-    				.attr("width", 210)
-    				.attr("height", 20)
-    				.attr("x", -35)
-    				.attr("y", 0)
+    				.attr("width", 180)
+    				.attr("height", 15)
 
     			var li = legend.append("g")
     				.attr("class", "legend-items");	
@@ -267,26 +262,28 @@
     				.append("text")
     				.attr("x", function(d, i){
     					if(i === 0){
-    						return -30;
+    						return -25;
     					}else{
-    						return 145;
+    						return 185;
     					}
     				})
-    				.attr("y", 15)
+    				.attr("y", 10)
    					.text(function(d) { return "$"+d.toFixed(2); });
 
     			li.selectAll("rect")
-    				.data(colors.map(function(col) {
+    				.data(color.range().map(function(col) {
       					var d = color.invertExtent(col);
+      						console.log(d);
       						return d;
     					}))
     				.enter()
     				.append("rect")
     				.attr("x", function(d, i) { return i*20; })
-    				.attr("y", 5)
-   					.attr("width", 40)
-    				.attr("height", 10)
-    				.style("fill", function(d) { return color(d[0]); });
+   					.attr("width", 20)
+    				.attr("height", 15)
+    				.style("fill", function(d) { 
+    					console.log(color(d[0]+.1));
+    					return color(d[0]+.1); });
 
 
   				select.on("change", function(d) {
