@@ -35,6 +35,8 @@
     	div.year_buttons div {
         	display: -webkit-flex;
   			display: flex;
+  			outline: black solid;
+  			outline-width: thin;
       	}
 
     	html, body, svg{
@@ -52,24 +54,28 @@
     		order: 5;
     	}
 
-    	.map {
-    		display: -webkit-flex;
- 			display: flex;	
-
-    	}
-
-    	circle {
-    		stroke: black;
-    		stroke-width: 0.7;
-    		opacity: 0.7;
-    	}
-
     	.select {
     		display: -webkit-flex;
   			display: flex;
     		margin: auto;
     		order: 3;
     	}
+
+    	.legend-title {
+   			font-weight: bold;
+   			font-size: 80%;
+
+		}
+
+		.legend-box {
+    		fill: none;
+    		stroke: #888;
+    		font-size: 10px;
+		}
+
+		.legend-items{
+			font-size: 60%;
+		}
 
 
 
@@ -79,16 +85,12 @@
 
   			d3.select("body")
   				.append("h1")
-  				.text("Industry Changes from 2010-2016");
+  				.text("Average Hourly Wages from 2010-2016");
 
 
   			d3.select("body")
   				.append("h2")
-  				.text("Select an industry to see how its employment numbers and highest average salary change year to year");
-
-
-  			d3.select("body")
-  				.append("h3");
+  				.text("Select an industry to see how the average salary changes year to year in each state");
 
   			var width = 960,
   				height = 500;
@@ -175,49 +177,29 @@
  						return d['occ_title'];
  					})
   					.rollup(function(leaves){
-  						var max_hourly_salary = d3.max(leaves, function(d){
-  							return d['h_mean'];
-  						});
-
-  						var max_employment = d3.max(leaves, function(d){
-  							return d['tot_emp']
-  						});
-
+  						//get list of all states and corresponding avg hourly wages
+  						wage_array = []
   						for (var i = 0; i<leaves.length; i++){
-  							if(leaves[i]['h_mean'] === max_hourly_salary){
-  								var wage_state = leaves[i]['state'];
-  								var coords = projection([+leaves[i]['longitude'], +leaves[i]['latitude']]);
-  								var center_x = coords[0];
-  								var center_y = coords[1];
-  							} else {
-  								continue;
-  							}
+  							wage_array.push([(leaves[i]['state']), (leaves[i]['h_mean'])])
   						}
 
-  						//get list of all states and corresponding employment numbers
-  						employment_array = []
-  						for (var i = 0; i<leaves.length; i++){
-  							employment_array.push([(leaves[i]['state']), (leaves[i]['tot_emp'])])
-  						}
+  						//get range across all years for scaling choropleth
+  						var minWage = d3.min(leaves, function(d){
+  							return +d['h_mean'];
+  						});
+
+  						var maxWage = d3.max(leaves, function(d){
+  							return +d['h_mean'];
+  						});
+
 
   						return {
-  							'state' : wage_state,
-  							'max_hourly_salary' : +max_hourly_salary,
-  							'center_x' : center_x,
-  							'center_y' : center_y,
-  							//'emp_state': emp_state
-  							'employment': employment_array
+  							'wages': wage_array,
+  							'minWage' : minWage,
+  							'maxWage': maxWage
   						};
   					})
   					.entries(data);
-  				//get the range of hourly mean values across entire dataset
-  				var hourly_salary_extent = d3.extent(data, function(d) {
-  					return +d['h_mean'];
-  				});
-
-  				var radius = d3.scale.sqrt()
-  					.domain(hourly_salary_extent)
-  					.range([5,15]);
 
   				function key_func(d) {
   					return d['key'];
@@ -236,122 +218,135 @@
 						return d;
 								})
 					.style("color", "black")
-					.style("background", "lightBlue");
-
 
   				select.on("change", function(d) {
-
+  				
   					//select which industry to look at from the dropdown menu
   					var selectValue = d3.select('select').property('value')
 
-  					function circle_values(d, type){
-  						//return the x, y coordinates and radius values for circles according
-  						//to the selected industry from the dropdown menu
-		                	for (var idx = 0; idx< d.values.length; idx++){
-		                		if (d.values[idx]['key'] === selectValue){
-		                			var center_x = d.values[idx].values['center_x'];
-		                			var center_y = d.values[idx].values['center_y'];
-		                			var r = radius(d.values[idx].values['max_hourly_salary']);
-		                		}
-		                	}
-		                	switch(type) {
-		                		case 'center_x':
-		                			return center_x;
-		                			break;
-		                		case 'center_y':
-		                			return center_y;
-		                			break;
-		                		case 'r':
-		                			return r;
-		                	}
-		                }
-		            //create empty placeholders for circles to get appended to
-					svg.append('g')
-		  				.attr("class", "bubble")
-		  				.selectAll("circle")
-		  				.data(nested, key_func)
-		  				.enter()
+		  			//create legend for wage scale
+		  			var colors = ["#f2f0f7", "#dadaeb", "#bcbddc",
+		  				"#9e9ac8", "#756bb1", "#54278f"];
+	
+    				//get min and max wages for entire year range for choropleth scale
+    				var wageRangeMin = d3.min(nested, function(d){
+    					for (var i = 0; i < d.values.length; i++){
+    						if (d.values[i]['key'] === selectValue){
+    							return d.values[i].values['minWage'];
+    						}
+    					}
+    				})
+
+    				var wageRangeMax = d3.max(nested, function(d){
+    					for (var i = 0; i < d.values.length; i++){
+    						if (d.values[i]['key'] === selectValue){
+    							return d.values[i].values['maxWage'];
+    						}
+    					}
+    				})
+
+    				var wageRange = [wageRangeMin, wageRangeMax]
+
+				  	var color = d3.scale.quantize()
+				  		.domain(wageRange)
+    					.range(colors);
+
+
+    				var title = ["Estimated Average Hourly Wage"];
+
+
+					var width = 960,
+   					height = 500,
+    				boxmargin = 4,
+    				lineheight = 14,
+    				keyheight = 10,
+    				keywidth = 40,
+    				boxwidth = 2 * keywidth;
+
+    				var margin = { "left": 600, "top": 20 };
+
+    				var legend = svg.append("g")
+    					.attr("transform", "translate ("+margin.left+","+margin.top+")")
+    					.attr("class", "legend")
+
+    				legend.selectAll("text")
+    					.data(title)
+    					.enter()
+    					.append("text")
+    					.attr("class", "legend-title")
+    					.attr("y", -5)
+    					.attr("x", -20)
+    					.text(function(d) { return d; })
+    	
+
+    				var lb = legend.append("rect")
+    					.attr("class", "legend-box")
+    					.attr("width", 210)
+    					.attr("height", 20)
+    					.attr("x", -35)
+    					.attr("y", 0)
+
+
+    				var li = legend.append("g")
+    					.attr("class", "legend-items");	
+
+    				li.selectAll("text")
+    					.data(wageRange)
+    					.enter()
+    					.append("text")
+    					.attr("x", function(d, i){
+    						if(i === 0){
+    							return -30;
+    						}else{
+    						return 145;
+    					}
+    					})
+    					.attr("y", 15)
+   						.text(function(d) { return "$"+d.toFixed(2); });
+
+    				li.selectAll("rect")
+    					.data(colors.map(function(col) {
+      						var d = color.invertExtent(col);
+      							return d;
+    							}))
+    					.enter()
+    					.append("rect")
+    					.attr("x", function(d, i) { return i*20; })
+    					.attr("y", 5)
+   						.attr("width", 40)
+    					.attr("height", 10)
+    					.style("fill", function(d) { return color(d[0]); });
+
 
 	  				function update(year) {
 	                	var filtered = nested.filter(function(d){
 	                		return new Date(d['key']).getUTCFullYear() === year;
 	                	});
 
+	                	//replace this with adding year buttins one at a time as they animate
 	                	//d3.select("h3")
 	                		//.text(year);
+	                	for (var i = 0; i<year_buttons[0].length; i++){
+	                		if (year_buttons[0][i]['innerText'] === year){
+	                			d3.select(year_buttons[0][i])
+	                				.style('background', 'black');
+	                		}
+	                	}
 
-		             	var circles = svg.selectAll('circle')
-		                               .data(filtered, key_func);
-
-		                //remove circles when transitioning to another year
-		                circles.exit().remove();
-
-
-		                //add new circles for next years data in animation
-			            circles.enter()
-			             	.append("circle")
-			             	.transition()
-			             	.duration(500)
-			  				.attr('cx', function(d){
-			  					var result = circle_values(d, 'center_x');
-			  					return result;
-			  				})
-			  				.attr('cy', function(d){
-			  					 var result = circle_values(d, 'center_y');
-			  					 return result;
-			  				})
-			  				.attr('r', function(d){
-			  					var result = circle_values(d, 'r');
-			  					return result;
-			  				})
-			  				.attr("fill", "#d95f02");
-
-
-			  			//function color_high_emp_state(d){
-			  				//Selects the state with the highest total employment for a 
-			  				//selected industry and fills it with dark blue
-			  				//var selected_data = filtered[0].values;
-
-			  				//for(var idx = 0; idx< selected_data.length; idx++){
-
-			  					//if (selected_data[idx]['key']===selectValue){
-			  						//var emp_state = selected_data[idx].values['emp_state'];
-			  						//if(d.properties.NAME === emp_state){
-			  							//return "darkBlue";
-			  						//}else{
-			  							//return "lightBlue";
-			  						//}
-			  					//}
-			  				//}
-			  			//}
 			  			function choropleth(d){
 				  			var selected_data = filtered[0].values;
 
 				  			for (var i = 0; i < selected_data.length; i++){
-
 				  				if (selected_data[i]['key'] === selectValue){
-				  					var employment_data = selected_data[i].values['employment'];
-
-				  					var employment_extent = d3.extent(employment_data, function(d){
-				  						return d[1];
-				  					});
-
-
-				  					var color = d3.scale.quantize()
-				  						.domain(employment_extent)
-    									.range(["#fcfbfd", "#efedf5", "#dadaeb", "#bcbddc", 
-    										"#9e9ac8", "#807dba", "#6a51a3", "#54278f", "#3f007d"]);
-
-
-
-				  					for (var i = 0; i<employment_data.length; i++){
-				  						if (d.properties.NAME === employment_data[i][0]){
-				  							return color(employment_data[i][1]);
-				  						}
-				  					}
-				  				}
+				  					var wage_data = selected_data[i].values['wages'];
+				  				} 
 				  			}
 
+				  			for (var i = 0; i < wage_data.length; i++){
+				  				if (wage_data[i][0] === d.properties.NAME){
+				  					return color(wage_data[i][1]);
+				  				}
+				  			}
 				  		}
 			  				
 			  			svg.selectAll('path')
@@ -383,7 +378,7 @@
 									.transition()
 									.duration(500)
 									.style("color", "black")
-									.style("background", "lightBlue");
+									.style("background", "white")
 								d3.select(this)
 									.transition()
 									.duration(500)
@@ -402,7 +397,6 @@
    			d3.csv("./State_OES.csv", function(d) {
     		// transform data
     			d['year'] = format.parse(d['year']);
-    			d['tot_emp'] = +d['tot_emp'];
     			d['h_mean'] = +d['h_mean'];
     			
     			return d;
