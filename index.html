@@ -65,7 +65,7 @@
     		order: 6;
     	}
 
-    	.select {
+    	.dropdown {
     		display: -webkit-flex;
   			display: flex;
     		margin: auto;
@@ -101,12 +101,12 @@
   	</style>
   	<script type="text/javascript">
   		function draw(geo_data) {
+  			"use strict";
 
   			d3.select("body")
   				.append("h1")
-  				.text("Estimated Average Hourly Wage by State");
+  				.text("Estimated Average Hourly Wage by State")
 
-  			//placeholder
   			d3.select("body")
   				.append("h2")
   				.text("The Bureau of Labor Statistics produces wage estimates annually.  This visualization compares average hourly wage estimates for 22 Major Occupational Groups from 2010 to 2016.  Select an occupation group to view the changes in hourly wage estimates each year")
@@ -141,7 +141,7 @@
 
   			var projection = d3.geo.albersUsa()
   				.scale(1070)
-  				.translate([width/2, height/2])
+  				.translate([width/2, height/2]);
 
   			var path = d3.geo.path().projection(projection);
 
@@ -157,7 +157,7 @@
 
   			var paths = svg.selectAll('path')
 		  		.attr("id", function(d){
-		  			statesRemoved = ["American Samoa", "Guam", "Commonwealth of the Northern Mariana Islands", "United States Virgin Islands", "Puerto Rico"]
+		  			var statesRemoved = ["American Samoa", "Guam", "Commonwealth of the Northern Mariana Islands", "United States Virgin Islands", "Puerto Rico"];
 		  			for (var i = 0; i<statesRemoved.length; i++){
 		  				if (d.properties.NAME === statesRemoved[i]){
 		  					return "remove";
@@ -165,7 +165,7 @@
 		  			}
 		  		})
 
-		  	svg.selectAll('path#remove').remove();
+		  	svg.selectAll('path#remove').remove()
 		  	
 
   			function plot_points(data) {
@@ -194,12 +194,12 @@
 					"Building and Grounds Cleaning and Maintenance Occupations",
 					"Food Preparation and Serving Related Occupations"];
 
-				var select = d3.select('body')
+				var dropdown = d3.select('body')
 					.append('select')
-					.attr('class', 'select')
+					.attr('class', 'dropdown')
 					.on('change', onchange);
 
-				var options = select.selectAll('option')
+				var options = dropdown.selectAll('option')
 					.data(industries).enter()
 					.append('option')
 					.text(function(d){
@@ -215,7 +215,7 @@
  					})
   					.rollup(function(leaves){
   						//get list of all states and corresponding avg hourly wages
-  						wage_array = []
+  						var wage_array = [];
   						for (var i = 0; i<leaves.length; i++){
   							wage_array.push([(leaves[i]['state']), (leaves[i]['h_mean'])])
   						}
@@ -316,7 +316,7 @@
     				.text( 'tooltip');
 
 
-  				select.on("change", function(d) {
+  				dropdown.on("change", function(d) {
 
   					//select which industry to look at from the dropdown menu
   					var selectValue = d3.select('select').property('value');

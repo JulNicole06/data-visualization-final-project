@@ -2,6 +2,7 @@
 This dataset contains information on occupational employment statistics (OES) by state from 2010 - 2016
 
 # Design 
+- Initial Visualization submitted for feedback : https://bl.ocks.org/JulNicole06/d6f7d2e5c1912778652da02eea572b23
 
 # Feedback 
 
