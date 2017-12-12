@@ -7,7 +7,7 @@ This dataset contains information on occupational employment statistics (OES) by
 # Feedback 
 - Review #1: "I found it interesting that perhaps the influx of movie jobs has, in part, led to an increase in wages in Georgia.  I also took away that healthcare wages have steadily increased all over the country.  Some suggestions to improve the graphic would be to have a play and pause button and to show data by county or smaller so you can see specific areas within a state that may be affected more or less by industry changes."
 
--Review #2: "Maybe show a pointed hand symbol to show that an item is clickable.  I like how you can go back to each year and look at more detail.  It might be helpful to put the occupations in order and give a description of what they are"
+- Review #2: "Maybe show a pointed hand symbol to show that an item is clickable.  I like how you can go back to each year and look at more detail.  It might be helpful to put the occupations in order and give a description of what they are"
 
 # Resources 
 1. https://www.bls.gov/oes/tables.htm - data in .xls format for each year was downloaded from the Bureau of Labor Statistics website
