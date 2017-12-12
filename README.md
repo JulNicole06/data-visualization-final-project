@@ -9,6 +9,10 @@ This dataset contains information on occupational employment statistics (OES) by
 
 - Review #2: "Maybe show a pointed hand symbol to show that an item is clickable.  I like how you can go back to each year and look at more detail.  It might be helpful to put the occupations in order and give a description of what they are"
 
+- Review #3: "The visualisation looks great. The map title seems to stay at 2016 and doesn't change to reflect the year I chose from the options."
+
+- Review #4: "When I am choosing anything from the drop down menu in the 2nd attempt, the year changes from 2011-2016-2012-2016-2013-2016 and so on. Is that a bug?"
+
 # Resources 
 1. https://www.bls.gov/oes/tables.htm - data in .xls format for each year was downloaded from the Bureau of Labor Statistics website
 
