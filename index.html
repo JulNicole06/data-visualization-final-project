@@ -171,28 +171,29 @@
   			function plot_points(data) {
   				//add all possible invisible circles
 				var industries = ["Select: ", 
+          "Architecture and Engineering Occupations", 
+          "Arts, Design, Entertainment, Sports, and Media Occupations", 
+          "Building and Grounds Cleaning and Maintenance Occupations",
+          "Business and Financial Operations Occupations", 
+          "Community and Social Service Occupations",
+          "Computer and Mathematical Occupations",
+          "Construction and Extraction Occupations",
+          "Education, Training, and Library Occupations",
+          "Farming, Fishing, and Forestry Occupations",
+          "Food Preparation and Serving Related Occupations",
+          "Healthcare Practitioners and Technical Occupations", 
+          "Healthcare Support Occupations",   
+          "Installation, Maintenance, and Repair Occupations",
 					"Legal Occupations", 
+          "Life, Physical, and Social Science Occupations", 
 					"Management Occupations",
-					"Healthcare Practitioners and Technical Occupations", 
-					"Architecture and Engineering Occupations", 
-					"Business and Financial Operations Occupations", 
-					"Computer and Mathematical Occupations",
-					"Life, Physical, and Social Science Occupations", 
-					"Arts, Design, Entertainment, Sports, and Media Occupations", 
-					"Education, Training, and Library Occupations",
+          "Office and Administrative Support Occupations",
+          "Personal Care and Service Occupations",
+          "Production Occupations",
 					"Protective Service Occupations",
-					"Construction and Extraction Occupations",
 					"Sales and Related Occupations",
-					"Community and Social Service Occupations",
-					"Production Occupations",
-					"Installation, Maintenance, and Repair Occupations",
-					"Transportation and Material Moving Occupations",
-					"Farming, Fishing, and Forestry Occupations",
-					"Office and Administrative Support Occupations",
-					"Healthcare Support Occupations",		
-					"Personal Care and Service Occupations",
-					"Building and Grounds Cleaning and Maintenance Occupations",
-					"Food Preparation and Serving Related Occupations"];
+					"Transportation and Material Moving Occupations"
+					];
 
 				var dropdown = d3.select('body')
 					.append('select')
@@ -322,10 +323,6 @@
   					var selectValue = d3.select('select').property('value');
 
 	  				function update(year) {
-
-	  					d3.select("h3")
-  							.text(year);
-
 	  					//make tooltip invisible before each year animates to refresh values with each year 
 	  					tooltip.style('visibility', 'hidden');
 
@@ -333,6 +330,12 @@
 	                		return new Date(d['key']).getUTCFullYear() === year;
 	                	});
 
+	                	//remove previous years info
+	                	d3.select('h3').remove()
+
+	                	d3.select("body")
+  							.append("h3")
+	                		.text(year)
 
 	                	function selectWageData(d){
 	                		var selected_data = filtered[0].values;
