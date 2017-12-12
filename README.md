@@ -13,6 +13,24 @@ This dataset contains information on occupational employment statistics (OES) by
 
 - Review #4: "When I am choosing anything from the drop down menu in the 2nd attempt, the year changes from 2011-2016-2012-2016-2013-2016 and so on. Is that a bug?"
 
+- Review #5: "What do I notice ?
+
+*Healthcare support operations and Social service operations which are one of the noble working areas have one of the lowest wages. Even Repair and Installation sector earns more than it.
+
+*California is one of the better places to work in as it provides one of the best average wages.
+
+Question about the data ?
+
+*None
+
+What relationships do you notice ?
+
+Over the years, average wage of people employed in sectors like Computer and Management rise sharply whereas people in health sector didn't get any significant increase. States on the coastal regions have comparitively higher avg wage.
+
+Main take away
+
+*Avg wages for jobs involving Computers and Management are growing at a faster rate. Hence people working in MNC's are offered more wages than the people working in unorganised sector."
+
 # Resources 
 1. https://www.bls.gov/oes/tables.htm - data in .xls format for each year was downloaded from the Bureau of Labor Statistics website
 
