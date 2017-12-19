@@ -1,0 +1,146 @@
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+html, body, svg{
+  display: -webkit-flex;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+body {
+  flex-direction: column;
+}
+
+h1 {
+  display: -webkit-flex;
+  display: flex;
+	text-align: center;
+	font-size:  100%;
+	order: 1;
+}
+
+h2 {
+	display: -webkit-flex;
+	display: flex;
+	text-align: center;
+	order: 2;
+	font-size: 75%;
+	width: 50%;
+	flex-wrap: wrap;
+
+}
+
+#dropdown {
+  display: -webkit-flex;
+  display: flex;
+  margin: auto;
+  order: 3;
+}
+
+#slider_div{
+  display: -webkit-flex;
+  display: flex;
+  justify-content: flex-start;
+  order: 4;
+  width: auto;
+  height: auto;
+  margin: 20px;
+}
+
+#slider_svg{
+  display: -webkit-flex;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 500px;
+  height: 50px;
+}
+
+#play-button{
+  display: -webkit-flex;
+  display: flex;
+  background: #deebf7;
+  border: black solid thin;
+  width: 40px;
+  cursor: pointer;
+  height: 30px;
+}
+
+#slider{
+  display: -webkit-flex;
+  display: flex;
+}
+
+#track,
+#track-inset,
+#track-overlay {
+  stroke-linecap: round;
+}
+
+#track {
+  stroke: #000;
+  stroke-opacity: 0.3;
+  stroke-width: 10px;
+}
+
+#track-inset {
+  stroke: #dcdcdc;
+  stroke-width: 8px;
+}
+
+#track-overlay {
+  pointer-events: stroke;
+  stroke-width: 50px;
+  stroke: transparent;
+  cursor: pointer;
+}
+
+#ticks {
+  font-size: 12px;
+}
+
+#handle {
+  fill: #fff;
+  stroke: #000;
+  stroke-opacity: 0.5;
+  stroke-width: 1.25px;
+}
+
+#legend-title {
+  display: -webkit-flex;
+  display: flex;
+	font-weight: bold;
+	font-size: 80%;
+}
+
+#legend-box {
+  display: -webkit-flex;
+  display: flex;
+  order: 6;
+	fill: none;
+	stroke: #888;
+	font-size: 10px;
+}
+
+#legend-items{
+  display: -webkit-flex;
+  display: flex;
+	font-size: 60%;
+}
+
+svg{
+  order: 7;
+}
+
+#tooltip{
+	color: black bold;
+	text-align: center;
+	background: white;
+	outline-color: black;
+	outline-width: thin;
+}
