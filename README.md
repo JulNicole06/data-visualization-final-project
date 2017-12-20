@@ -6,7 +6,7 @@ The Bureau of Labor Statistics produces wage estimates annually.  This visualiza
 
 I chose to use a map projection to easily visualize the spread of average wages across the US.  I encoded the average wages by color using a sequential scale of 9 shades of blue, since blue is a colorblind safe option, with the darker shades representing higher wages.  I used a dropdown menu to filter the data by occupational group so the reader can review each occupation individually.  I animated the data throughout each year and added buttons that the reader can use to drill down into the data further by selecting a specific year and hovering over each state to see exact wage values.  
 
-- Final Visualiztion - https://bl.ocks.org/JulNicole06/a5f1b96e7e29f872cea4e9b292461847"
+- Final Visualiztion : https://bl.ocks.org/JulNicole06/a5f1b96e7e29f872cea4e9b292461847"
 
 After gathering feedback, I changed the year buttons and automatic animation to a play/pause drag slider to give the reader more control over the animation as suggested in review #1.  I did not add data to show wages by county as requested in review #1 since this would take a significant amount of time to clean the data for use in this project.  This also had the added benefit of removing the h3 tag bug described in review #3 and #4.  I also used a pointer cursor to highlight clickable features and sorted the list of occupation groups as suggested in review #2.  
 

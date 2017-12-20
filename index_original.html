@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://d3js.org/d3.v3.min.js"></script>
+  	<style>
+  		* {
+		    -webkit-box-sizing: border-box;
+		    -moz-box-sizing: border-box;
+		    -ms-box-sizing: border-box;
+		    box-sizing: border-box;
+		}
+  		h1 {
+      		text-align: center;
+      		font-size:  100%;
+      		order: 1;
+    	}
+
+    	h2 {
+    		display: -webkit-flex;
+  			display: flex;
+    		text-align: center;
+    		order: 2;
+    		font-size: 80%;
+    		width: 50%;
+    		flex-wrap: wrap;
+
+    	}
+
+    	h3 {
+    		text-align: center;
+    		order: 5;
+    	}
+
+    	div.year_buttons {
+    		display: -webkit-flex;
+  			display: flex;
+  			flex-wrap: wrap;
+  			width: 50%;
+  			order: 4;
+  			justify-content: space-between;
+  			margin: 2%;
+    	}
+
+    	div.year_buttons div {
+        	display: -webkit-flex;
+  			display: flex;
+  			outline: black solid;
+  			outline-width: thin;
+  			background-color: #deebf7;
+      	}
+
+    	html, body, svg{
+    		display: -webkit-flex;
+  			display: flex;
+  			justify-content: center;
+  			align-items: center;
+    	}
+
+    	body {
+    		flex-direction: column;
+    	}
+
+    	svg{
+    		order: 6;
+    	}
+
+    	.select {
+    		display: -webkit-flex;
+  			display: flex;
+    		margin: auto;
+    		order: 3;
+    	}
+
+    	.legend-title {
+   			font-weight: bold;
+   			font-size: 80%;
+
+		}
+
+		.legend-box {
+    		fill: none;
+    		stroke: #888;
+    		font-size: 10px;
+		}
+
+		.legend-items{
+			font-size: 60%;
+		}
+
+		.tooltip{
+			color: black bold;
+			text-align: center;
+			background: white;
+			outline-color: black;
+			outline-width: thin;
+		}
+
+
+
+  	</style>
+  	<script type="text/javascript">
+  		function draw(geo_data) {
+
+  			d3.select("body")
+  				.append("h1")
+  				.text("Estimated Average Hourly Wage by State");
+
+  			//placeholder
+  			d3.select("body")
+  				.append("h2")
+  				.text("The Bureau of Labor Statistics produces wage estimates annually.  This visualization compares average hourly wage estimates for 22 Major Occupational Groups from 2010 to 2016.  Select an occupation group to view the changes in hourly wage estimates each year")
+
+  			//placeholder
+  			d3.select("body")
+  				.append("h3")
+
+  			var years = [2010, 2011, 2012, 2013, 2014, 2015, 2016];
+
+  			var year_buttons = d3.select("body")
+				.append("div")
+				.attr("class", "year_buttons")
+				.selectAll("div")
+				.data(years)
+				.enter()
+				.append("div")
+				.text(function(d) {
+					return d;
+					})
+				.style("color", "black");
+
+  			var width = 960,
+  				height = 500;
+
+  			var svg = d3.select("body")
+  				.append("svg")
+  				.attr("width", width)
+  				.attr("height", height)
+  				.append('g')
+  				.attr('class', 'map');
+
+  			var projection = d3.geo.albersUsa()
+  				.scale(1070)
+  				.translate([width/2, height/2])
+
+  			var path = d3.geo.path().projection(projection);
+
+  			var map = svg.selectAll('path')
+  				.data(geo_data.features)
+  				.enter()
+  				.append('path')
+  				.attr('d', path)
+  				.style('fill', '#fcfbfd')
+  				.style('stroke', 'black')
+  				.style('stroke-width', 0.5);
+
+
+  			var paths = svg.selectAll('path')
+		  		.attr("id", function(d){
+		  			statesRemoved = ["American Samoa", "Guam", "Commonwealth of the Northern Mariana Islands", "United States Virgin Islands", "Puerto Rico"]
+		  			for (var i = 0; i<statesRemoved.length; i++){
+		  				if (d.properties.NAME === statesRemoved[i]){
+		  					return "remove";
+		  				} 
+		  			}
+		  		})
+
+		  	svg.selectAll('path#remove').remove();
+		  	
+
+  			function plot_points(data) {
+  				//add all possible invisible circles
+				var industries = ["Select: ", 
+					"Legal Occupations", 
+					"Management Occupations",
+					"Healthcare Practitioners and Technical Occupations", 
+					"Architecture and Engineering Occupations", 
+					"Business and Financial Operations Occupations", 
+					"Computer and Mathematical Occupations",
+					"Life, Physical, and Social Science Occupations", 
+					"Arts, Design, Entertainment, Sports, and Media Occupations", 
+					"Education, Training, and Library Occupations",
+					"Protective Service Occupations",
+					"Construction and Extraction Occupations",
+					"Sales and Related Occupations",
+					"Community and Social Service Occupations",
+					"Production Occupations",
+					"Installation, Maintenance, and Repair Occupations",
+					"Transportation and Material Moving Occupations",
+					"Farming, Fishing, and Forestry Occupations",
+					"Office and Administrative Support Occupations",
+					"Healthcare Support Occupations",		
+					"Personal Care and Service Occupations",
+					"Building and Grounds Cleaning and Maintenance Occupations",
+					"Food Preparation and Serving Related Occupations"];
+
+				var select = d3.select('body')
+					.append('select')
+					.attr('class', 'select')
+					.on('change', onchange);
+
+				var options = select.selectAll('option')
+					.data(industries).enter()
+					.append('option')
+					.text(function(d){
+						return d;
+					});
+
+  				var nested = d3.nest()
+  					.key(function(d) {
+  						return d['year'].getUTCFullYear();
+  					})
+  					.key(function(d) {
+ 						return d['occ_title'];
+ 					})
+  					.rollup(function(leaves){
+  						//get list of all states and corresponding avg hourly wages
+  						wage_array = []
+  						for (var i = 0; i<leaves.length; i++){
+  							wage_array.push([(leaves[i]['state']), (leaves[i]['h_mean'])])
+  						}
+
+  						//get range across all years for scaling choropleth
+  						var minWage = d3.min(leaves, function(d){
+  							return +d['h_mean'];
+  						});
+
+  						var maxWage = d3.max(leaves, function(d){
+  							return +d['h_mean'];
+  						});
+
+
+  						return {
+  							'wages': wage_array,
+  							'minWage' : minWage,
+  							'maxWage': maxWage
+  						};
+  					})
+  					.entries(data);
+
+  				function key_func(d) {
+  					return d['key'];
+  				}
+
+				//create legend for wage scale
+		  		var colors = ["#f7fbff","#deebf7","#c6dbef","#9ecae1",
+		  			"#6baed6","#4292c6","#2171b5","#08519c","#08306b"];
+	
+    			//get min and max wages for entire dataset
+    			var wageRange = d3.extent(data, function(d){
+    					return d['h_mean'];
+    				});
+
+				var color = d3.scale.quantize()
+				  	.domain(wageRange)
+    				.range(colors);
+
+    			var legend = svg.append("g")
+    				.attr("transform", "translate ("+600+","+20+")")
+    				.attr("class", "legend")
+
+    			var title = ["Estimated Average Hourly Wage"];
+
+    			legend.selectAll("text")
+    				.data(title)
+    				.enter()
+    				.append("text")
+    				.attr("class", "legend-title")
+    				.attr("y", -5)
+    				.text(function(d) { return d; })
+    	
+    			//add box surrounding color scale
+    			var lb = legend.append("rect")
+    				.attr("class", "legend-box")
+    				.attr("width", 180)
+    				.attr("height", 15)
+
+    			var li = legend.append("g")
+    				.attr("class", "legend-items");	
+
+    			li.selectAll("text")
+    				.data(wageRange)
+    				.enter()
+    				.append("text")
+    				.attr("x", function(d, i){
+    					if(i === 0){
+    						return -25;
+    					}else{
+    						return 185;
+    					}
+    				})
+    				.attr("y", 10)
+   					.text(function(d) { return "$"+d.toFixed(2); });
+
+    			li.selectAll("rect")
+    				.data(color.range().map(function(col) {
+      					var d = color.invertExtent(col);
+      						return d;
+    					}))
+    				.enter()
+    				.append("rect")
+    				.attr("x", function(d, i) { return i*20; })
+   					.attr("width", 20)
+    				.attr("height", 15)
+    				.style("fill", function(d) { 
+    					return color(d[0]+.1); });
+
+
+				//Create div for invisible tooltip
+    			var tooltip = d3.select( 'body' )
+    				.append( 'div' )
+    				.attr('class', 'tooltip')
+    				.style('position', 'absolute')
+    				.style('z-index', '9999')
+    				.style('visibility', 'hidden')
+    				.text( 'tooltip');
+
+
+  				select.on("change", function(d) {
+
+  					//select which industry to look at from the dropdown menu
+  					var selectValue = d3.select('select').property('value');
+
+	  				function update(year) {
+
+	  					d3.select("h3")
+  							.text(year);
+
+	  					//make tooltip invisible before each year animates to refresh values with each year 
+	  					tooltip.style('visibility', 'hidden');
+
+	                	var filtered = nested.filter(function(d){
+	                		return new Date(d['key']).getUTCFullYear() === year;
+	                	});
+
+
+	                	function selectWageData(d){
+	                		var selected_data = filtered[0].values;
+
+				  			for (var i = 0; i < selected_data.length; i++){
+				  				if (selected_data[i]['key'] === selectValue){
+				  					var wage_data = selected_data[i].values['wages'];
+				  				} 
+				  			}
+
+				  			for (var i = 0; i < wage_data.length; i++){
+				  				if (wage_data[i][0] === d.properties.NAME){
+				  					return wage_data[i];
+				  				}
+				  			}
+				  		}
+
+			  			function choropleth(d){
+			  				var wage_data = selectWageData(d);
+			  				if (wage_data !== undefined){
+			  					return color(wage_data[1]);
+			  				}
+				  		}
+
+				  		function tooltipInfo(d){
+				  			var wage_data = selectWageData(d);
+				  			if (wage_data !== undefined){
+				  				return wage_data[0]+": $"+wage_data[1].toFixed(2)+"/hr";
+				  			}
+				  		}
+			  				
+			  			svg.selectAll('path')
+			  				.transition()
+			  				.duration(500)
+			  				.style('fill', choropleth)
+			  				.style('stroke', "black");
+
+			  			svg.selectAll('path')
+			  				.on("mousemove", function(d) {
+                    			return tooltip.style('visibility', 'visible')
+                    						.html(tooltipInfo(d))
+                    						.transition()
+                    						.style("top", (d3.event.layerY) + "px" )
+                    						.style("left", (d3.event.layerX) + "px" );
+                			})
+			  				
+			  			}
+
+						
+			  		var year_idx = 0;
+
+					var year_interval = setInterval(function() {
+						//animate visualization thru each year
+						update(years[year_idx]);
+
+						year_idx++;
+
+						//once animation is finished looping thru years, 
+						//create buttons to loop back thru speciic years
+						//via clicking on the button
+						if(year_idx >= years.length){
+							clearInterval(year_interval);
+
+
+							year_buttons.on("click", function(d) {
+								d3.select(".year_buttons")
+									.selectAll("div")
+									.transition()
+									.duration(500)
+									.style("color", "black")
+									.style("background", "white")
+								d3.select(this)
+									.transition()
+									.duration(500)
+									.style("background", "darkBlue")
+									.style("color", "white");
+								update(d);
+							});
+						}
+					}, 1000);
+				})
+			}
+
+  			var format = d3.time.format("%Y");
+
+
+   			d3.csv("./State_OES.csv", function(d) {
+    		// transform data
+    			d['year'] = format.parse(d['year']);
+    			d['h_mean'] = +d['h_mean'];
+    			
+    			return d;
+    		}, plot_points);
+   		};
+  		</script>
+	</head>
+<body>
+  	<script type="text/javascript">
+  		d3.json("./map.json", draw);
+  	</script>
+</body>
+</html>
