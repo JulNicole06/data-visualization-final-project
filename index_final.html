@@ -11,11 +11,11 @@
 
 				d3.select("body")
 					.append("h1")
-					.text("Estimated Average Hourly Wage Growth by State")
+					.text("Estimated Average Hourly Wage Growth by State");
 
 				d3.select("body")
 					.append("h2")
-					.text("Select an occupation group, then click 'Play' to view how estimated hourly wages have changed from 2010-2016")
+					.text("Select an occupation group, then click 'Play' to view how estimated hourly wages have changed from 2010-2016");
 
 				//Add Dropdown menu of occupation group options
 				var industries = ["Select: ", 
@@ -88,7 +88,7 @@
 				var playButton = d3.select("#slider_div")
 					.append("button")
 					.attr("id", "play-button")
-					.text("Play")
+					.text("Play");
 
 				var formatDate = d3.timeFormat("%Y");
 
@@ -104,7 +104,7 @@
 				var currentValue = 0;
 				var targetValue = 500;
 
-				var playButton = d3.select("#play-button")
+				var playButton = d3.select("#play-button");
 
 				var slider_x = d3.scaleTime()
 					.domain([startDate, endDate])
@@ -171,7 +171,7 @@
 
 					var legend = svg.append("g")
 						.attr("transform", "translate ("+600+","+20+")")
-						.attr("id", "legend")
+						.attr("id", "legend");
 
 					var title = ["Estimated Average Hourly Wage"];
 
@@ -181,12 +181,12 @@
 						.append("text")
 						.attr("id", "legend-title")
 						.attr("y", -5)
-						.text(function(d) { return d; })
+						.text(function(d) { return d; });
 
 					var lb = legend.append("rect")
 						.attr("id", "legend-box")
 						.attr("width", 180)
-						.attr("height", 15)
+						.attr("height", 15);
 
 					var li = legend.append("g")
 						.attr("id", "legend-items"); 
@@ -240,7 +240,7 @@
 					//return the key (year) for each element in nested data
 					function key_func(d) {
 						return d['key'];
-					}
+					};
 
 					//filter data according to selection from dropdown menu
 					dropdown.on("change", function(d) {
@@ -270,7 +270,7 @@
 										return wage_data[i];
 									}
 								}
-							}
+							};
 
 							//update each state with color scale associated with wages
 							function choropleth(d){
@@ -278,7 +278,7 @@
 								if (wage_data !== undefined){
 									return color(wage_data[1]);
 								}
-							}
+							};
 
 							svg.selectAll('path')
 								.transition()
@@ -291,7 +291,7 @@
 								if (wage_data !== undefined){
 									return wage_data[0]+": $"+wage_data[1].toFixed(2)+"/hr";
 								}
-							}
+							};
 
 							svg.selectAll('path')
 								.on("mousemove", function(d) {
@@ -301,7 +301,7 @@
 																.style("top", (d3.event.layerY) + "px" )
 																.style("left", (d3.event.layerX) + "px" );
 							})
-						}
+						};
 
 						//set initial timer of animation to 0
 						var timer = 0;
@@ -315,7 +315,7 @@
 								.text(formatDate(year));
 
 							update_map(year.getUTCFullYear());
-						}
+						};
 
 						//move handle across slider 
 						function step() {
@@ -328,7 +328,7 @@
 								clearInterval(timer);
 								playButton.text("Play");
 							}
-						}
+						};
 
 						//start/pause animation 
 						playButton.on("click", function(){
@@ -342,7 +342,7 @@
 								timer = setInterval(step, 1000);
 								button.text("Pause");
 							}
-						})
+						});
 
 						//allow for manual manipulation of year selection
 						//by adding drag feature to slider
@@ -356,8 +356,8 @@
 								button.text("Play");
 							})
 						);
-					})
-				}
+					});
+				};
 
 				//import and format data 
 				var parseDate = d3.timeParse("%Y");
