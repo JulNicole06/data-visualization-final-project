@@ -12,7 +12,7 @@ After gathering feedback, I changed the year buttons and automatic animation to 
 
  - Final Visualization (Second Submission) : https://bl.ocks.org/JulNicole06/fd77ca1f331a3ac3148896f90572e238
 
-Made required and suggested changes outlined in submission 1's revew
+Made required and suggested changes outlined in submission 1's review
 
 # Feedback 
 - Review #1: "I found it interesting that perhaps the influx of movie jobs has, in part, led to an increase in wages in Georgia.  I also took away that healthcare wages have steadily increased all over the country.  Some suggestions to improve the graphic would be to have a play and pause button and to show data by county or smaller so you can see specific areas within a state that may be affected more or less by industry changes."
