@@ -15,7 +15,7 @@
 
 				d3.select("body")
 					.append("h2")
-					.text("Select an occupation group, then click 'Play' to view how estimated hourly wages have changed from 2010-2016");
+					.text("This visualization compares average hourly wage estimates for 22 Major Occupational Groups from 2010 to 2016 at the state level provided by the Bureau of Labor Statistics.  Select an occupational group and click 'Play' to see how the average wage changes from year to year.  Note how certain occupational groups experienced more growth (i.e. Computer and Mathematical Occupations), compared to other occupational groups with much less growth in average wages (i.e. Farming, Fishing and Forestry Occupations)");
 
 				//Add Dropdown menu of occupation group options
 				var industries = ["Select: ", 
@@ -100,6 +100,7 @@
 
 				var startDate = new Date(2010, 0, 1),
 					endDate = new Date(2017, 0, 1);
+				var years = [new Date(2010, 0, 1), new Date(2011, 0, 1), new Date(2012, 0, 1), new Date(2013, 0, 1), new Date(2014, 0, 1), new Date(2015, 0, 1), new Date(2016, 0, 1)];
 				var moving = false;
 				var currentValue = 0;
 				var targetValue = 500;
@@ -198,9 +199,8 @@
 						.attr("x", function(d, i){
 							if(i === 0){
 								return -25;
-							}else{
-								return 185;
 							}
+							return 185;
 						})
 						.attr("y", 10)
 						.text(function(d) { return "$"+d.toFixed(2); });
@@ -306,9 +306,11 @@
 						//set initial timer of animation to 0
 						var timer = 0;
 
-						//update position and text of label according to slider scale as well
-						//as map associated with year associated with that position
-						function update_slider(year) {
+						//update value and text of label according to slider scale as well
+						//as map associated with year associated with that value
+						function update_slider(value) {
+							var year = slider_x.invert(value);
+
 							handle.attr("cx", slider_x(year));
 
 							label.attr("x", slider_x(year))
@@ -317,12 +319,45 @@
 							update_map(year.getUTCFullYear());
 						};
 
+						
+						//take in slider x value of current year and return the 
+						//x value of the next year
+						function nextValue(currentValue){
+							var date = slider_x.invert(currentValue);
+
+							switch(date.getUTCFullYear()){
+								case 2010:
+									date.setUTCFullYear(2011);
+									break;
+								case 2011:
+									date.setUTCFullYear(2012);
+									break;
+								case 2012:
+									date.setUTCFullYear(2013);
+									break;
+								case 2013:
+									date.setUTCFullYear(2014);
+									break;
+								case 2014:
+									date.setUTCFullYear(2015);
+									break;
+								case 2015:
+									date.setUTCFullYear(2016);
+									break;
+								case 2016:
+									date.setUTCFullYear(2017);
+							}
+							return slider_x(date);
+						};
+
+
 						//move handle across slider 
 						function step() {
-							update_slider(slider_x.invert(currentValue));
-							currentValue = currentValue + (targetValue/7) + .01; //divide range by 7 possible
-							//years and add .01 to ensure handle is within range of each year 
-							if (currentValue > targetValue) {
+							update_slider(currentValue);
+
+							currentValue = nextValue(currentValue); 
+
+							if (slider_x.invert(currentValue).getUTCFullYear() === 2017) {
 								moving = false;
 								currentValue = 0;
 								clearInterval(timer);
@@ -333,29 +368,17 @@
 						//start/pause animation 
 						playButton.on("click", function(){
 							var button = d3.select(this);
+
 							if(button.text() == "Pause"){
 								moving = false;
 								clearInterval(timer);
 								button.text("Play");
-							} else{
+							}else if(button.text() == "Play"){
 								moving = true;
 								timer = setInterval(step, 1000);
 								button.text("Pause");
 							}
 						});
-
-						//allow for manual manipulation of year selection
-						//by adding drag feature to slider
-						slider.call(d3.drag()
-							.on("start", function(){
-								slider.interrupt();
-							})
-							.on("end", function(){
-								currentValue = d3.event.x;
-								update_slider(slider_x.invert(currentValue));
-								button.text("Play");
-							})
-						);
 					});
 				};
 
